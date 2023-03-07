@@ -1,7 +1,7 @@
 package com.dc.stripeandroidsample.utils
 
 object EndPoints {
-    private const val isLive = false
+    private const val isLive = true
 
     fun baseUrl(): String {
         return if (isLive) {

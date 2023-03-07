@@ -21,5 +21,11 @@ class DashboardActivity : AppCompatActivity() {
         binding.paymentSheet.setOnClickListener {
             openActivity(className = PaymentSheetViewActivity::class.java)
         }
+        binding.cardOnly.setOnClickListener {
+            openActivity(className = CardOnlyViewActivity::class.java)
+        }
+        binding.paymentOption.setOnClickListener {
+            openActivity(className = GooglePayViewActivity::class.java)
+        }
     }
 }

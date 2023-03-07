@@ -49,6 +49,7 @@ dependencies {
 
     // stripe
     implementation 'com.stripe:stripe-android:20.19.4'
+    implementation 'com.stripe:stripecardscan:20.19.5'
 
     //Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'

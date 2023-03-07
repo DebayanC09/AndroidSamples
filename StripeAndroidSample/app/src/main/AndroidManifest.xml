@@ -16,6 +16,12 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
         <activity
+            android:name=".ui.GooglePayViewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.CardOnlyViewActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.PaymentSheetViewActivity"
             android:exported="false" />
         <activity

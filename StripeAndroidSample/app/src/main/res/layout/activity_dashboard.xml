@@ -17,6 +17,20 @@
             android:layout_height="wrap_content"
             android:text="Payment Sheet"
             tools:ignore="HardcodedText" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/cardOnly"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Card Only"
+            tools:ignore="HardcodedText" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/paymentOption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Payment Option"
+            tools:ignore="HardcodedText" />
     </LinearLayout>
 
 </ScrollView>
