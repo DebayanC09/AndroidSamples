@@ -3,14 +3,11 @@ package com.dc.stripeandroidsample.ui
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.dc.stripeandroidsample.databinding.ActivityPaymentSheetViewBinding
-import com.dc.stripeandroidsample.model.PaymentSheetResponse
-import com.dc.stripeandroidsample.network.RetrofitClient
+import com.dc.stripeandroidsample.model.PaymentSheetModel
+import com.dc.stripeandroidsample.repository.Repository
 import com.dc.stripeandroidsample.utils.*
 import com.stripe.android.paymentsheet.PaymentSheet
 import com.stripe.android.paymentsheet.PaymentSheetResult
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 
 class PaymentSheetViewActivity : AppCompatActivity() {
     private val binding: ActivityPaymentSheetViewBinding by lazy {
@@ -41,53 +38,28 @@ class PaymentSheetViewActivity : AppCompatActivity() {
         binding.payButton.disable()
         binding.progressBar.show()
 
-        RetrofitClient.invoke()
-            .requestPaymentSheet(userId = userId, amount = amount, currency = currency)
-            .enqueue(object :
-                Callback<PaymentSheetResponse> {
-                override fun onResponse(
-                    call: Call<PaymentSheetResponse>,
-                    response: Response<PaymentSheetResponse>
-                ) {
+
+        Repository.initiatePayment(
+            amount = amount,
+            currency = currency,
+            userId = userId,
+            object : Repository.Status {
+                override fun success(data: PaymentSheetModel?) {
                     binding.payButton.show()
                     binding.progressBar.gone()
 
-                    if (response.isSuccessful) {
-                        response.body()?.let { body ->
-                            if (body.status.equals("1", false) && body.statusCode.equals(
-                                    "200",
-                                    false
-                                )
-                            ) {
+                    val paymentIntent: String = data?.paymentIntent ?: ""
+                    val customerId: String = data?.customerId ?: ""
+                    val ephemeralKey: String = data?.ephemeralKey ?: ""
 
-                                val paymentIntent: String = body.data?.paymentIntent ?: ""
-                                val customerId: String = body.data?.customerId ?: ""
-                                val ephemeralKey: String = body.data?.ephemeralKey ?: ""
-
-                                presentPaymentSheet(paymentIntent, customerId, ephemeralKey)
-                            } else {
-                                binding.payButton.enable()
-                                body.message?.let {
-                                    showToast(it)
-                                } ?: kotlin.run {
-                                    showToast("Something went wrong")
-                                }
-                            }
-                        } ?: kotlin.run {
-                            binding.payButton.enable()
-                            showToast("Something went wrong")
-                        }
-                    } else {
-                        binding.payButton.enable()
-                        showToast("Something went wrong")
-                    }
+                    presentPaymentSheet(paymentIntent, customerId, ephemeralKey)
                 }
 
-                override fun onFailure(call: Call<PaymentSheetResponse>, t: Throwable) {
+                override fun error(message: String) {
                     binding.payButton.show()
                     binding.payButton.enable()
                     binding.progressBar.gone()
-                    showToast(t.message)
+                    showToast(message)
                 }
             })
     }
