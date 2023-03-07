@@ -30,7 +30,7 @@ class PaymentSheetViewActivity : AppCompatActivity() {
 
     private fun initiatePayment() {
         var amount = binding.cartLayout.totalPrice.text.toString().replace("₹", "").trim()
-        amount += "00" // appending value. (ex. 450 appended to 4500)
+        amount += "00" // appending value. (ex. 450 appended to 45000)
         val currency = "INR"
         val userId: String = getUserdata()?.id ?: ""
 
