@@ -1,8 +1,8 @@
 package com.dc.stripeandroidsample.ui
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import com.dc.stripeandroidsample.base.BaseActivity
 import com.dc.stripeandroidsample.databinding.ActivityCardOnlyViewBinding
+import com.dc.stripeandroidsample.model.PaymentRequestModel
 import com.dc.stripeandroidsample.model.PaymentSheetModel
 import com.dc.stripeandroidsample.repository.Repository
 import com.dc.stripeandroidsample.utils.*
@@ -11,21 +11,23 @@ import com.stripe.android.model.ConfirmPaymentIntentParams
 import com.stripe.android.payments.paymentlauncher.PaymentLauncher
 import com.stripe.android.payments.paymentlauncher.PaymentResult
 
-class CardOnlyViewActivity : AppCompatActivity() {
+class CardOnlyViewActivity : BaseActivity() {
     private lateinit var paymentLauncher: PaymentLauncher
     private val binding: ActivityCardOnlyViewBinding by lazy {
         ActivityCardOnlyViewBinding.inflate(layoutInflater)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(binding.root)
-
+    override fun onCreateChildView(): ChildView {
         initializePayment()
-
         setOnClickListener()
-
         binding.cardInput.clearFocus()
+        return ChildView(view = binding.root)
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+
     }
 
     private fun initializePayment() {
@@ -45,8 +47,8 @@ class CardOnlyViewActivity : AppCompatActivity() {
     }
 
     private fun initiatePayment() {
-        var amount = binding.cartLayout.totalPrice.text.toString().replace("₹", "").trim()
-        amount += "00" // appending value. (ex. 450 appended to 45000)
+        var amount: String = binding.cartLayout.totalPrice.text.toString().replace("₹", "").trim()
+        amount = (amount.toDouble() * 100).toInt().toString()
         val currency = "INR"
         val userId: String = getUserdata()?.id ?: ""
 
@@ -55,10 +57,14 @@ class CardOnlyViewActivity : AppCompatActivity() {
         binding.progressBar.show()
 
         Repository.initiatePayment(
-            amount = amount,
-            currency = currency,
-            userId = userId,
-            object : Repository.Status {
+            model = PaymentRequestModel(
+                amount = amount,
+                currency = currency,
+                userId = userId,
+                merchantCountry = MerchantCountry.INDIA.name,
+                payment_method_types = emptyList()
+            ),
+            status = object : Repository.Status {
                 override fun success(data: PaymentSheetModel?) {
                     binding.payButton.show()
                     binding.progressBar.gone()

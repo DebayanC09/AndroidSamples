@@ -1,8 +1,7 @@
 package com.dc.stripeandroidsample.ui
 
-import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import com.dc.stripeandroidsample.base.BaseActivity
 import com.dc.stripeandroidsample.databinding.ActivitySignUpBinding
 import com.dc.stripeandroidsample.model.LoginResponse
 import com.dc.stripeandroidsample.network.RetrofitClient
@@ -11,15 +10,17 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class SignUpActivity : AppCompatActivity() {
+class SignUpActivity : BaseActivity() {
     private val binding: ActivitySignUpBinding by lazy {
         ActivitySignUpBinding.inflate(layoutInflater)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(binding.root)
+    override fun onCreateChildView(): ChildView {
+        return ChildView(view = binding.root)
+    }
 
+    override fun onResume() {
+        super.onResume()
         setOnClickListener()
     }
 
@@ -29,15 +30,15 @@ class SignUpActivity : AppCompatActivity() {
         }
     }
 
-    private fun register(){
-        val name : String = binding.name.text.toString().trim()
-        val email : String = binding.email.text.toString().trim()
-        val password : String = binding.password.text.toString().trim()
-        val address : String = binding.address.text.toString().trim()
-        val city : String = binding.city.text.toString().trim()
-        val state : String = binding.state.text.toString().trim()
-        val country : String = binding.country.text.toString().trim()
-        val postalCode : String = binding.postalCode.text.toString().trim()
+    private fun register() {
+        val name: String = binding.name.text.toString().trim()
+        val email: String = binding.email.text.toString().trim()
+        val password: String = binding.password.text.toString().trim()
+        val address: String = binding.address.text.toString().trim()
+        val city: String = binding.city.text.toString().trim()
+        val state: String = binding.state.text.toString().trim()
+        val country: String = binding.country.text.toString().trim()
+        val postalCode: String = binding.postalCode.text.toString().trim()
 
         setLoading(true)
 
@@ -48,15 +49,19 @@ class SignUpActivity : AppCompatActivity() {
             address = address,
             city = city,
             state = state,
-            country  = country,
+            country = country,
             postalCode = postalCode
         ).enqueue(object :
             Callback<LoginResponse> {
             override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
                 setLoading(false)
-                if(response.isSuccessful){
+                if (response.isSuccessful) {
                     response.body()?.let { body ->
-                        if (body.status.equals("1", false) && body.statusCode.equals("201", false)) {
+                        if (body.status.equals("1", false) && body.statusCode.equals(
+                                "201",
+                                false
+                            )
+                        ) {
                             body.user?.let {
                                 setUserdata(it)
                                 openActivity(DashboardActivity::class.java, clearTask = true)
@@ -76,14 +81,14 @@ class SignUpActivity : AppCompatActivity() {
                     } ?: kotlin.run {
                         showToast("Something went wrong")
                     }
-                }else{
+                } else {
                     showToast("Something went wrong")
                 }
             }
 
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
                 setLoading(false)
-                Toast.makeText(this@SignUpActivity,t.message, Toast.LENGTH_LONG).show()
+                Toast.makeText(this@SignUpActivity, t.message, Toast.LENGTH_LONG).show()
             }
 
         })

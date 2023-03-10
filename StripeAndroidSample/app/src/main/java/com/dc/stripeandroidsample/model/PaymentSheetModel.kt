@@ -14,5 +14,8 @@ data class PaymentSheetModel(
 
     @SerializedName("customerId")
     @Expose
-    var customerId: String? = null
+    var customerId: String? = null,
+    @SerializedName("publishableKey")
+    @Expose
+    var publishableKey: String? = null
 )

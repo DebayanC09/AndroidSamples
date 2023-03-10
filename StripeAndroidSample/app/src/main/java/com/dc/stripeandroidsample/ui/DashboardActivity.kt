@@ -1,20 +1,18 @@
 package com.dc.stripeandroidsample.ui
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import com.dc.stripeandroidsample.base.BaseActivity
 import com.dc.stripeandroidsample.databinding.ActivityDashboardBinding
 import com.dc.stripeandroidsample.utils.openActivity
 
-class DashboardActivity : AppCompatActivity() {
+class DashboardActivity : BaseActivity() {
     private val binding: ActivityDashboardBinding by lazy {
         ActivityDashboardBinding.inflate(layoutInflater)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(binding.root)
-
+    override fun onCreateChildView(): ChildView {
         setOnClickListener()
+
+        return ChildView(view = binding.root, showBack = false)
     }
 
     private fun setOnClickListener() {
@@ -24,8 +22,8 @@ class DashboardActivity : AppCompatActivity() {
         binding.cardOnly.setOnClickListener {
             openActivity(className = CardOnlyViewActivity::class.java)
         }
-        binding.paymentOption.setOnClickListener {
-            openActivity(className = GooglePayViewActivity::class.java)
+        binding.playground.setOnClickListener {
+            openActivity(className = PlaygroundViewActivity::class.java)
         }
     }
 }

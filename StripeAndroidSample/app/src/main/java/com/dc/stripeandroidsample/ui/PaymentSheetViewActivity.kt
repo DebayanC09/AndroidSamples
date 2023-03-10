@@ -1,25 +1,26 @@
 package com.dc.stripeandroidsample.ui
 
-import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
+import com.dc.stripeandroidsample.base.BaseActivity
 import com.dc.stripeandroidsample.databinding.ActivityPaymentSheetViewBinding
+import com.dc.stripeandroidsample.model.PaymentRequestModel
 import com.dc.stripeandroidsample.model.PaymentSheetModel
 import com.dc.stripeandroidsample.repository.Repository
 import com.dc.stripeandroidsample.utils.*
+import com.stripe.android.PaymentConfiguration
 import com.stripe.android.paymentsheet.PaymentSheet
 import com.stripe.android.paymentsheet.PaymentSheetResult
 
-class PaymentSheetViewActivity : AppCompatActivity() {
+class PaymentSheetViewActivity : BaseActivity() {
     private val binding: ActivityPaymentSheetViewBinding by lazy {
         ActivityPaymentSheetViewBinding.inflate(layoutInflater)
     }
     private lateinit var paymentSheet: PaymentSheet
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(binding.root)
+    override fun onCreateChildView(): ChildView {
         paymentSheet = PaymentSheet(this, ::onPaymentSheetResult)
         setOnClickListener()
+
+        return ChildView(view = binding.root)
     }
 
     private fun setOnClickListener() {
@@ -29,8 +30,8 @@ class PaymentSheetViewActivity : AppCompatActivity() {
     }
 
     private fun initiatePayment() {
-        var amount = binding.cartLayout.totalPrice.text.toString().replace("₹", "").trim()
-        amount += "00" // appending value. (ex. 450 appended to 45000)
+        var amount: String = binding.cartLayout.totalPrice.text.toString().replace("₹", "").trim()
+        amount = (amount.toDouble() * 100).toInt().toString()
         val currency = "INR"
         val userId: String = getUserdata()?.id ?: ""
 
@@ -40,10 +41,14 @@ class PaymentSheetViewActivity : AppCompatActivity() {
 
 
         Repository.initiatePayment(
-            amount = amount,
-            currency = currency,
-            userId = userId,
-            object : Repository.Status {
+            model = PaymentRequestModel(
+                amount = amount.toInt().toString(),
+                currency = currency,
+                userId = userId,
+                merchantCountry = MerchantCountry.INDIA.name,
+                payment_method_types = emptyList()
+            ),
+            status = object : Repository.Status {
                 override fun success(data: PaymentSheetModel?) {
                     binding.payButton.show()
                     binding.progressBar.gone()
@@ -51,8 +56,9 @@ class PaymentSheetViewActivity : AppCompatActivity() {
                     val paymentIntent: String = data?.paymentIntent ?: ""
                     val customerId: String = data?.customerId ?: ""
                     val ephemeralKey: String = data?.ephemeralKey ?: ""
+                    val publishableKey: String = data?.publishableKey ?: ""
 
-                    presentPaymentSheet(paymentIntent, customerId, ephemeralKey)
+                    presentPaymentSheet(paymentIntent, customerId, ephemeralKey, publishableKey)
                 }
 
                 override fun error(message: String) {
@@ -67,8 +73,10 @@ class PaymentSheetViewActivity : AppCompatActivity() {
     private fun presentPaymentSheet(
         paymentIntent: String,
         customerId: String,
-        ephemeralKey: String
+        ephemeralKey: String,
+        publishableKey: String
     ) {
+        PaymentConfiguration.init(applicationContext, publishableKey)
         val customerConfig = PaymentSheet.CustomerConfiguration(
             customerId,
             ephemeralKey

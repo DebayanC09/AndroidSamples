@@ -26,10 +26,10 @@
             tools:ignore="HardcodedText" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/paymentOption"
+            android:id="@+id/playground"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Payment Option"
+            android:text="Playground"
             tools:ignore="HardcodedText" />
     </LinearLayout>
 

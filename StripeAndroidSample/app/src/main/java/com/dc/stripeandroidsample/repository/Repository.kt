@@ -1,5 +1,6 @@
 package com.dc.stripeandroidsample.repository
 
+import com.dc.stripeandroidsample.model.PaymentRequestModel
 import com.dc.stripeandroidsample.model.PaymentSheetModel
 import com.dc.stripeandroidsample.model.PaymentSheetResponse
 import com.dc.stripeandroidsample.network.RetrofitClient
@@ -10,10 +11,10 @@ import retrofit2.Response
 object Repository {
 
 
-    fun initiatePayment(amount: String, currency: String, userId: String, status: Status) {
+    fun initiatePayment(model: PaymentRequestModel, status: Status) {
 
         RetrofitClient.invoke()
-            .requestPaymentSheet(userId = userId, amount = amount, currency = currency)
+            .requestPaymentSheet(model)
             .enqueue(object :
                 Callback<PaymentSheetResponse> {
                 override fun onResponse(
