@@ -6,7 +6,7 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import com.dc.plaidandroidsample.model.UserModel
+import com.dc.plaidandroidsample.model.LoginResponse
 import com.google.gson.Gson
 
 fun View.show() {
@@ -35,13 +35,13 @@ fun Context.showToast(message: String?) {
     }
 }
 
-fun Context.getUserdata(): UserModel? {
+fun Context.getUserdata(): LoginResponse.UserModel? {
     val sharedPreferences: SharedPreferences =
         getSharedPreferences(USER_CREDENTIAL, Context.MODE_PRIVATE)
-    return Gson().fromJson(sharedPreferences.getString("userData", null), UserModel::class.java)
+    return Gson().fromJson(sharedPreferences.getString("userData", null), LoginResponse.UserModel::class.java)
 }
 
-fun Context.setUserdata(userModel: UserModel?) {
+fun Context.setUserdata(userModel: LoginResponse.UserModel?) {
     val sharedPreferences: SharedPreferences = getSharedPreferences(
         USER_CREDENTIAL, Context.MODE_PRIVATE
     )

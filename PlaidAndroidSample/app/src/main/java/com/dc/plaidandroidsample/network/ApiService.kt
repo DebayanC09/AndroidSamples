@@ -1,7 +1,6 @@
 package com.dc.plaidandroidsample.network
 
-import com.dc.plaidandroidsample.model.LinkTokenResponse
-import com.dc.plaidandroidsample.model.LoginResponse
+import com.dc.plaidandroidsample.model.*
 import com.dc.plaidandroidsample.utils.EndPoints
 import retrofit2.Call
 import retrofit2.http.Field
@@ -28,7 +27,26 @@ interface ApiService {
     @FormUrlEncoded
     @POST(EndPoints.createLinkToken)
     fun createLinkToken(
-        @Field("userId") userId: String,
+        @Field("user_id") userId: String,
     ): Call<LinkTokenResponse>
+
+    @FormUrlEncoded
+    @POST(EndPoints.setAccessToken)
+    fun setAccessToken(
+        @Field("user_id") userId: String,
+        @Field("public_token") publicToken: String,
+    ): Call<GeneralResponse>
+
+    @FormUrlEncoded
+    @POST(EndPoints.getAccountList)
+    fun getAccountList(
+        @Field("user_id") userId: String,
+    ): Call<AccountResponse>
+
+    @FormUrlEncoded
+    @POST(EndPoints.getTransactionList)
+    fun getTransactionList(
+        @Field("user_id") userId: String,
+    ): Call<TransactionListResponse>
 
 }

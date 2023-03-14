@@ -6,17 +6,31 @@ import com.google.gson.annotations.SerializedName
 data class LoginResponse(
     @SerializedName("statusCode")
     @Expose
-    var statusCode: String? = null,
+    val statusCode: String? = null,
 
     @SerializedName("status")
     @Expose
-    var status: String? = null,
+    val status: String? = null,
 
     @SerializedName("message")
     @Expose
-    var message: String? = null,
+    val message: String? = null,
 
     @SerializedName("user")
     @Expose
-    var user: UserModel? = null
-)
+    val user: UserModel? = null
+) {
+    data class UserModel(
+        @SerializedName("_id")
+        @Expose
+        val id: String? = null,
+
+        @SerializedName("name")
+        @Expose
+        val name: String? = null,
+
+        @SerializedName("email")
+        @Expose
+        val email: String? = null
+    )
+}

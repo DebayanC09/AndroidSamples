@@ -6,17 +6,31 @@ import com.google.gson.annotations.SerializedName
 data class LinkTokenResponse(
     @SerializedName("statusCode")
     @Expose
-    var statusCode: String? = null,
+    val statusCode: String? = null,
 
     @SerializedName("status")
     @Expose
-    var status: String? = null,
+    val status: String? = null,
 
     @SerializedName("message")
     @Expose
-    var message: String? = null,
+    val message: String? = null,
 
     @SerializedName("data")
     @Expose
-    var data: LinkTokenModel? = null
-)
+    val data: LinkTokenModel? = null
+) {
+    data class LinkTokenModel(
+        @SerializedName("expiration")
+        @Expose
+        val expiration: String? = null,
+
+        @SerializedName("link_token")
+        @Expose
+        val linkToken: String? = null,
+
+        @SerializedName("request_id")
+        @Expose
+        val requestId: String? = null
+    )
+}

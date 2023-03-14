@@ -1,8 +1,7 @@
 package com.dc.plaidandroidsample.ui
 
-import android.os.Bundle
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
+import com.dc.plaidandroidsample.base.BaseActivity
 import com.dc.plaidandroidsample.databinding.ActivitySignUpBinding
 import com.dc.plaidandroidsample.model.LoginResponse
 import com.dc.plaidandroidsample.network.RetrofitClient
@@ -11,16 +10,14 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class SignUpActivity : AppCompatActivity() {
+class SignUpActivity : BaseActivity() {
     private val binding: ActivitySignUpBinding by lazy {
         ActivitySignUpBinding.inflate(layoutInflater)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(binding.root)
-
+    override fun onCreateChildView(): ChildView {
         setOnClickListener()
+        return ChildView(view = binding.root)
     }
 
     private fun setOnClickListener() {
