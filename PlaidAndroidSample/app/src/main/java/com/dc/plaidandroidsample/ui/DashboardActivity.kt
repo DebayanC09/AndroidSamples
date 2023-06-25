@@ -11,7 +11,9 @@ import com.dc.plaidandroidsample.network.RetrofitClient
 import com.dc.plaidandroidsample.utils.*
 import com.google.android.material.tabs.TabLayoutMediator
 import com.plaid.link.OpenPlaidLink
+import com.plaid.link.Plaid
 import com.plaid.link.configuration.LinkTokenConfiguration
+import com.plaid.link.linkTokenConfiguration
 import com.plaid.link.result.LinkExit
 import com.plaid.link.result.LinkSuccess
 import retrofit2.Call
@@ -129,9 +131,14 @@ class DashboardActivity : BaseActivity() {
                             body.data?.let { data ->
 
                                 data.linkToken?.let {
-                                    val tokenConfiguration =
-                                        LinkTokenConfiguration.Builder().token(it).build()
-                                    linkAccountToPlaid.launch(tokenConfiguration)
+                                    //val tokenConfiguration = LinkTokenConfiguration.Builder().token(it).build()
+                                    //linkAccountToPlaid.launch(tokenConfiguration)
+
+                                    val a = linkTokenConfiguration {
+                                        token = it
+                                    }
+                                    Plaid.create(this@DashboardActivity.application, a).open(this@DashboardActivity)
+
                                 }
 
                             }

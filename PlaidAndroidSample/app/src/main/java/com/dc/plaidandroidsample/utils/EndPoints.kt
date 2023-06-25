@@ -5,7 +5,7 @@ object EndPoints {
 
     fun baseUrl(): String {
         return if (isLive) {
-            "https://lazy-lime-coypu-boot.cyclic.app/"
+            "https://cyan-super-piglet.cyclic.app"
         } else {
             "http://192.168.100.2:5000/"
         }
