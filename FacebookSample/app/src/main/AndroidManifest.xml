@@ -18,6 +18,9 @@
         android:theme="@style/Theme.FacebookSample"
         tools:targetApi="31">
         <activity
+            android:name=".UserFeedActivity"
+            android:exported="false" />
+        <activity
             android:name=".LoginActivity"
             android:exported="false" />
         <activity

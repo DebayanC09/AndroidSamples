@@ -28,6 +28,9 @@ class MainActivity : AppCompatActivity() {
         binding.facebookLogin.setOnClickListener {
             startActivity(Intent(this,LoginActivity::class.java))
         }
+        binding.userPost.setOnClickListener {
+            startActivity(Intent(this,UserFeedActivity::class.java))
+        }
     }
 
     private fun keyHash() {

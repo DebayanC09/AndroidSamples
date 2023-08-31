@@ -14,4 +14,11 @@
         android:text="Facebook Login"
         tools:ignore="HardcodedText" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/userPost"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="User Posts"
+        tools:ignore="HardcodedText" />
+
 </LinearLayout>
