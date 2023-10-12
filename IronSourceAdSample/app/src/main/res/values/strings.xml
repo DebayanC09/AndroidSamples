@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">IronSourceAdSample</string>
+    <string name="load_ad">Load Ad</string>
+    <string name="interstitial">Interstitial</string>
+</resources>
