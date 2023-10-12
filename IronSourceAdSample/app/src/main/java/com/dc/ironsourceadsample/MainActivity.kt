@@ -23,6 +23,9 @@ class MainActivity : AppCompatActivity() {
         binding.interstitial.setOnClickListener {
             startActivity(Intent(this@MainActivity,InterstitialActivity::class.java))
         }
+        binding.banner.setOnClickListener {
+            startActivity(Intent(this@MainActivity,BannerActivity::class.java))
+        }
     }
 
 

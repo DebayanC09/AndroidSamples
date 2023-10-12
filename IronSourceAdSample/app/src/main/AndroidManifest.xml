@@ -17,6 +17,9 @@
         android:theme="@style/Theme.IronSourceAdSample"
         tools:targetApi="31">
         <activity
+            android:name=".BannerActivity"
+            android:exported="false" />
+        <activity
             android:name=".InterstitialActivity"
             android:exported="false" />
         <activity
