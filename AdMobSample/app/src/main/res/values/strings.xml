@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">AdMobSample</string>
+    <string name="load_ad">Load Ad</string>
+    <string name="open_ad">Open Ad</string>
+</resources>
