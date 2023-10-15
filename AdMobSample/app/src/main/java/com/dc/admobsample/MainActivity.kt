@@ -14,10 +14,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
+        setOnClickListener()
 
+    }
+
+    private fun setOnClickListener() {
         binding.openAd.setOnClickListener {
             startActivity(Intent(this@MainActivity, OpenAdActivity::class.java))
         }
 
+        binding.bannerAd.setOnClickListener {
+            startActivity(Intent(this@MainActivity, BannerAdActivity::class.java))
+        }
     }
 }

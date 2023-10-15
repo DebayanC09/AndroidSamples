@@ -18,6 +18,9 @@
         android:theme="@style/Theme.AdMobSample"
         tools:targetApi="31">
         <activity
+            android:name=".BannerAdActivity"
+            android:exported="false" />
+        <activity
             android:name=".OpenAdActivity"
             android:exported="false" />
 

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".OpenAdActivity">
+    tools:context=".BannerAdActivity">
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button"
@@ -23,6 +23,24 @@
         android:visibility="gone"
         tools:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.gms.ads.AdView
+        android:id="@+id/adViewStatic"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:adSize="BANNER"
+        app:adUnitId="ca-app-pub-3940256099942544/6300978111"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <FrameLayout
+        android:id="@+id/adViewDynamic"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
