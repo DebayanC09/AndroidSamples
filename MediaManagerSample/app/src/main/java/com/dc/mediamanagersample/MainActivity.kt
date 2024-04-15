@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.dc.mediamanagersample.databinding.ActivityMainBinding
+import com.dc.mediamanagersample.views.FilePickerActivity
 import com.dc.mediamanagersample.views.PhotoPickerActivity
 
 class MainActivity : AppCompatActivity() {
@@ -28,8 +29,14 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setOnClickListener() {
-        binding.photoPickerButton.setOnClickListener {
-            startActivity(Intent(this@MainActivity,PhotoPickerActivity::class.java))
+        binding.apply {
+            photoPickerButton.setOnClickListener {
+                startActivity(Intent(this@MainActivity,PhotoPickerActivity::class.java))
+            }
+
+            filePickerButton.setOnClickListener {
+                startActivity(Intent(this@MainActivity, FilePickerActivity::class.java))
+            }
         }
     }
 }

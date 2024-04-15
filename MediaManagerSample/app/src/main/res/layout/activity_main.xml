@@ -7,11 +7,25 @@
     android:padding="16dp"
     tools:context=".MainActivity">
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/photoPickerButton"
-        android:layout_width="match_parent"
+    <LinearLayout
         android:layout_height="wrap_content"
-        android:text="Photo Picker"
-        tools:ignore="HardcodedText" />
+        android:layout_width="match_parent"
+        android:orientation="vertical">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/photoPickerButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Photo Picker"
+            tools:ignore="HardcodedText" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/filePickerButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="File Picker"
+            tools:ignore="HardcodedText" />
+
+    </LinearLayout>
 
 </ScrollView>

@@ -11,11 +11,17 @@ class PhotoPickerActivity : AppCompatActivity() {
         ActivityPhotoPickerBinding.inflate(layoutInflater)
     }
 
-    private val picker: MediaManager.PhotoPicker =
-        MediaManager.PhotoPicker(activity = this@PhotoPickerActivity, uriCallback = { uri ->
-            println(uri)
+    private val singlePicker: MediaManager.PhotoPicker = MediaManager.PhotoPicker().apply {
+        registerSinglePicker { uri: Uri? ->
             setImage(uri)
-        })
+        }
+    }
+
+    private val multiPicker: MediaManager.PhotoPicker = MediaManager.PhotoPicker().apply {
+        registerMultiPicker { uris: List<Uri>? ->
+            println(uris)
+        }
+    }
 
     private fun setImage(uri: Uri?) {
         uri?.let {
@@ -32,17 +38,26 @@ class PhotoPickerActivity : AppCompatActivity() {
 
     private fun setOnClickListener() {
         binding.pickMediaButton.setOnClickListener {
-//            picker.launch(MediaManager.PhotoPicker.ImageAndVideo)
-//            picker.launch(MediaManager.PhotoPicker.ImageOnly)
-//            picker.launch(MediaManager.PhotoPicker.VideoOnly)
-//
-//            picker.launch(MediaManager.PhotoPicker.singleMimeType(MediaManager.PhotoPicker.ALL_IMAGE))
-//            picker.launch(MediaManager.PhotoPicker.singleMimeType(MediaManager.PhotoPicker.JPG))
-//            picker.launch(MediaManager.PhotoPicker.singleMimeType(MediaManager.PhotoPicker.JPEG))
-//            picker.launch(MediaManager.PhotoPicker.singleMimeType(MediaManager.PhotoPicker.PNG))
-//            picker.launch(MediaManager.PhotoPicker.singleMimeType(MediaManager.PhotoPicker.GIF))
+            launchSinglePicker()
+            launchMultiPicker()
 
 
         }
+    }
+
+    private fun launchMultiPicker() {
+        //multiPicker.launch(MediaManager.PhotoPicker.ImageOnly)
+    }
+
+    private fun launchSinglePicker() {
+//        singlePicker.launch(MediaManager.PhotoPicker.ImageAndVideo)
+        singlePicker.launch(MediaManager.PhotoPicker.ImageOnly)
+//        singlePicker.launch(MediaManager.PhotoPicker.VideoOnly)
+//
+//        singlePicker.launch(MediaManager.PhotoPicker.singleMimeType(MediaManager.ALL_IMAGE))
+//        singlePicker.launch(MediaManager.PhotoPicker.singleMimeType(MediaManager.JPG))
+//        singlePicker.launch(MediaManager.PhotoPicker.singleMimeType(MediaManager.JPEG))
+//        singlePicker.launch(MediaManager.PhotoPicker.singleMimeType(MediaManager.PNG))
+//        singlePicker.launch(MediaManager.PhotoPicker.singleMimeType(MediaManager.GIF))
     }
 }
