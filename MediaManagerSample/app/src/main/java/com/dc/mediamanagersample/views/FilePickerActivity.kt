@@ -5,6 +5,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.dc.mediamanagersample.databinding.ActivityFilePickerBinding
 import com.dc.mediamanagersample.utils.MediaManager
+import com.dc.mediamanagersample.utils.MediaManager.FileUtil.uriToFile
+
 
 class FilePickerActivity : AppCompatActivity() {
     private val binding: ActivityFilePickerBinding by lazy {
@@ -13,7 +15,16 @@ class FilePickerActivity : AppCompatActivity() {
 
     private val singlePicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
         registerSinglePicker { uri: Uri? ->
-            println(uri)
+            getMediaData(uri)
+        }
+    }
+
+    private fun getMediaData(uri: Uri?) {
+        try {
+            val mediaData: MediaManager.MediaData = uriToFile(uri = uri)
+            println(mediaData)
+        } catch (e: Exception) {
+            println(e.message)
         }
     }
 
@@ -40,11 +51,13 @@ class FilePickerActivity : AppCompatActivity() {
     }
 
     private fun launchMultiPicker() {
-        multiPicker.launch(mediaType = MediaManager.ALL_IMAGE,allowMultiple = true)
+        //multiPicker.launch(mediaType = MediaManager.ALL_IMAGE,allowMultiple = true)
     }
 
     private fun launchSinglePicker() {
-        //singlePicker.launch(mediaType = MediaManager.ALL_IMAGE, allowMultiple = false)
+        singlePicker.launch(mediaType = MediaManager.ALL_IMAGE, allowMultiple = false)
 
     }
+
+
 }
