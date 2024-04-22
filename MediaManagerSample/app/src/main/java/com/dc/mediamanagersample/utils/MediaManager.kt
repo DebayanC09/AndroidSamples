@@ -2,6 +2,8 @@ package com.dc.mediamanagersample.utils
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
@@ -111,10 +113,19 @@ class MediaManager {
     }
 
     object FileUtil {
-//        private val projection = arrayOf(
-//            OpenableColumns.DISPLAY_NAME,
-//            OpenableColumns.SIZE
-//        )
+
+        fun fileToBitmap(file : File): Bitmap? {
+            return BitmapFactory.decodeFile(file.absolutePath)
+        }
+
+        fun deleteFile(file: File): Boolean {
+            val fileToDelete = File(file.parentFile, file.name)
+
+            if (fileToDelete.exists()) {
+                return fileToDelete.delete()
+            }
+            return false
+        }
 
         private fun AppCompatActivity.getFileName(uri: Uri): String? {
             val cursor = contentResolver.query(
@@ -154,6 +165,18 @@ class MediaManager {
             return null
         }
 
+        fun AppCompatActivity.urisToFiles(uris: List<Uri>?, folderName: String = ""): List<MediaData> {
+            val list : ArrayList<MediaData> = arrayListOf()
+            uris?.forEach {uri ->
+                try {
+                    val mediaData : MediaData = uriToFile(uri = uri, folderName = folderName)
+                    list.add(mediaData)
+                } catch (e: Exception) {
+
+                }
+            }
+            return list
+        }
 
         fun AppCompatActivity.uriToFile(uri: Uri?, folderName: String = ""): MediaData {
 
