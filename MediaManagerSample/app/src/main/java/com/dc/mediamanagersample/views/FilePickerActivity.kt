@@ -41,8 +41,13 @@ class FilePickerActivity : AppCompatActivity() {
 
     private fun setOnClickListener() {
         binding.pickFileButton.setOnClickListener {
-            launchSinglePicker()
-            launchMultiPicker()
+            launchSingleFilePicker()
+            launchMultiFilePicker()
+        }
+
+        binding.pickImageButton.setOnClickListener {
+            launchSingleMediaPicker()
+            launchMultiMediaPicker()
         }
 
         binding.deleteButton.setOnClickListener {
@@ -57,14 +62,24 @@ class FilePickerActivity : AppCompatActivity() {
         }
     }
 
-    private fun launchMultiPicker() {
-        multiPicker.launch(mediaType = MediaManager.ALL_IMAGE,allowMultiple = true)
+    //region Picker Listeners
+    private fun launchSingleFilePicker() {
+        //singlePicker.launchFilePicker(mediaType = MediaManager.ALL_IMAGE, allowMultiple = false)
     }
 
-    private fun launchSinglePicker() {
-        //singlePicker.launch(mediaType = MediaManager.ALL_IMAGE, allowMultiple = false)
-
+    private fun launchMultiFilePicker() {
+        multiPicker.launchFilePicker(mediaType = MediaManager.ALL_IMAGE,allowMultiple = true)
     }
+
+    private fun launchSingleMediaPicker() {
+        singlePicker.launchMediaPicker(mediaType = MediaManager.ALL_IMAGE)
+    }
+
+    private fun launchMultiMediaPicker() {
+        //multiPicker.launchMediaPicker(mediaType = MediaManager.ALL_AUDIO, allowMultiple = true)
+    }
+
+    //endregion
 
     private fun getMediaData(uri: Uri?) {
         try {
@@ -91,9 +106,6 @@ class FilePickerActivity : AppCompatActivity() {
         detailsText = "${detailsText}\n${mediaData.mimeType}"
 
         binding.details.text = detailsText
-
-        println(mediaData.file.parentFile)
-
 
     }
 

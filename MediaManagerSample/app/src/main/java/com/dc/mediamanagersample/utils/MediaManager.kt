@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.activity.result.ActivityResultLauncher
@@ -31,6 +32,13 @@ class MediaManager {
         const val JPEG = "image/jpeg"
         const val PNG = "image/png"
         const val GIF = "image/gif"
+
+        const val ALL_VIDEO = "video/*"
+        const val MP4 = "video/mp4"
+
+        const val ALL_AUDIO = "audio/*"
+        const val MP3 = "audio/mp3"
+        const val M4A = "audio/m4a"
     }
 
     class PhotoPicker {
@@ -100,11 +108,22 @@ class MediaManager {
                 }
         }
 
-        fun launch(mediaType: String = ALL_IMAGE, allowMultiple: Boolean = false) {
+        fun launchFilePicker(mediaType: String = ALL_IMAGE, allowMultiple: Boolean = false) {
             if (::picker.isInitialized) {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                     addCategory(Intent.CATEGORY_OPENABLE)
                     type = mediaType
+                    putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
+                }
+                picker.launch(intent)
+            }
+        }
+
+        fun launchMediaPicker(mediaType: String = ALL_IMAGE,allowMultiple: Boolean = false){
+            if (::picker.isInitialized) {
+                val intent = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
+                    type = mediaType
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
                 }
                 picker.launch(intent)
