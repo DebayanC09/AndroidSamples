@@ -18,15 +18,39 @@ class FilePickerActivity : AppCompatActivity() {
         ActivityFilePickerBinding.inflate(layoutInflater)
     }
 
-    private val singlePicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
+    private val singleFilePicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
         registerSinglePicker { uri: Uri? ->
             getMediaData(uri)
         }
     }
 
-    private val multiPicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
+    private val multiFilePicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
         registerMultiPicker { uris: List<Uri>? ->
             getMediaDataList(uris)
+        }
+    }
+
+    private val singleImagePicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
+        registerSinglePicker { uri: Uri? ->
+            //getMediaData(uri)
+        }
+    }
+
+    private val multiImagePicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
+        registerMultiPicker { uris: List<Uri>? ->
+            //getMediaDataList(uris)
+        }
+    }
+
+    private val singleVideoPicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
+        registerSinglePicker { uri: Uri? ->
+            //getMediaData(uri)
+        }
+    }
+
+    private val multiVideoPicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
+        registerMultiPicker { uris: List<Uri>? ->
+            //getMediaDataList(uris)
         }
     }
 
@@ -40,14 +64,28 @@ class FilePickerActivity : AppCompatActivity() {
     }
 
     private fun setOnClickListener() {
-        binding.pickFileButton.setOnClickListener {
+        binding.pickSingleFileButton.setOnClickListener {
             launchSingleFilePicker()
+        }
+
+        binding.pickMultiFileButton.setOnClickListener {
             launchMultiFilePicker()
         }
 
-        binding.pickImageButton.setOnClickListener {
-            launchSingleMediaPicker()
-            launchMultiMediaPicker()
+        binding.pickSingleImageButton.setOnClickListener {
+            launchSingleImagePicker()
+        }
+
+        binding.pickMultiImageButton.setOnClickListener {
+            launchMultiImagePicker()
+        }
+
+        binding.pickSingleVideoButton.setOnClickListener {
+            launchSingleVideoPicker()
+        }
+
+        binding.pickMultiVideoButton.setOnClickListener {
+            launchMultiVideoPicker()
         }
 
         binding.deleteButton.setOnClickListener {
@@ -64,19 +102,55 @@ class FilePickerActivity : AppCompatActivity() {
 
     //region Picker Listeners
     private fun launchSingleFilePicker() {
-        //singlePicker.launchFilePicker(mediaType = MediaManager.ALL_IMAGE, allowMultiple = false)
+        singleFilePicker.launchFilePicker(
+            mediaType = MediaManager.MediaType.ALL_IMAGE,
+            allowMultiple = false
+        )
     }
 
     private fun launchMultiFilePicker() {
-        multiPicker.launchFilePicker(mediaType = MediaManager.ALL_IMAGE,allowMultiple = true)
+        multiFilePicker.launchFilePicker(
+            mediaType = MediaManager.MediaType.ALL_IMAGE,
+            allowMultiple = true
+        )
     }
 
-    private fun launchSingleMediaPicker() {
-        singlePicker.launchMediaPicker(mediaType = MediaManager.ALL_IMAGE)
+    private fun launchSingleImagePicker() {
+        try {
+            singleImagePicker.launchImagePicker(mediaType = MediaManager.MediaType.ALL_IMAGE)
+        } catch (e: Exception) {
+            Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
+        }
     }
 
-    private fun launchMultiMediaPicker() {
-        //multiPicker.launchMediaPicker(mediaType = MediaManager.ALL_AUDIO, allowMultiple = true)
+    private fun launchMultiImagePicker() {
+        try {
+            multiImagePicker.launchImagePicker(
+                mediaType = MediaManager.MediaType.ALL_IMAGE,
+                allowMultiple = true
+            )
+        } catch (e: Exception) {
+            Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun launchSingleVideoPicker() {
+        try {
+            singleVideoPicker.launchVideoPicker(mediaType = MediaManager.MediaType.ALL_VIDEO)
+        } catch (e: Exception) {
+            Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun launchMultiVideoPicker() {
+        try {
+            multiVideoPicker.launchVideoPicker(
+                mediaType = MediaManager.MediaType.ALL_VIDEO,
+                allowMultiple = true
+            )
+        } catch (e: Exception) {
+            Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
+        }
     }
 
     //endregion

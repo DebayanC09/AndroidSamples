@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.activity.result.ActivityResultLauncher
@@ -18,28 +17,58 @@ import java.io.FileOutputStream
 
 class MediaManager {
 
+    companion object {
+        private const val IMAGE = "image"
+        private const val VIDEO = "video"
+        private const val AUDIO = "audio"
+        private const val APPLICATION = "application"
+    }
+
     data class MediaData(
         val fileName: String,
         val fileSize: Int,
         val file: File,
-        val extension : String,
-        val mimeType : String
+        val extension: String,
+        val mimeType: String
     )
 
-    companion object {
-        const val ALL_IMAGE = "image/*"
-        const val JPG = "image/jpg"
-        const val JPEG = "image/jpeg"
-        const val PNG = "image/png"
-        const val GIF = "image/gif"
+    enum class MediaType(val type: String) {
+        ALL("*/*"),
 
-        const val ALL_VIDEO = "video/*"
-        const val MP4 = "video/mp4"
+        // Image MIME types
+        ALL_IMAGE("${IMAGE}/*"),
+        JPG("${IMAGE}/jpg"),
+        JPEG("${IMAGE}/jpeg"),
+        PNG("${IMAGE}/png"),
+        GIF("${IMAGE}/gif"),
 
-        const val ALL_AUDIO = "audio/*"
-        const val MP3 = "audio/mp3"
-        const val M4A = "audio/m4a"
+        // Video MIME types
+        ALL_VIDEO("${VIDEO}/*"),
+        MP4("${VIDEO}/mp4"),
+
+        // Audio MIME types
+        ALL_AUDIO("${AUDIO}/*"),
+        MP3("${AUDIO}/mp3"),
+        M4A("${AUDIO}/m4a"),
+
+        // Document MIME types
+        ALL_DOCUMENT("${APPLICATION}/*"),
     }
+
+//    companion object {
+//        const val ALL_IMAGE = "image/*"
+//        const val JPG = "image/jpg"
+//        const val JPEG = "image/jpeg"
+//        const val PNG = "image/png"
+//        const val GIF = "image/gif"
+//
+//        const val ALL_VIDEO = "video/*"
+//        const val MP4 = "video/mp4"
+//
+//        const val ALL_AUDIO = "audio/*"
+//        const val MP3 = "audio/mp3"
+//        const val M4A = "audio/m4a"
+//    }
 
     class PhotoPicker {
 
@@ -50,8 +79,8 @@ class MediaManager {
             val ImageAndVideo = ActivityResultContracts.PickVisualMedia.ImageAndVideo
             val ImageOnly = ActivityResultContracts.PickVisualMedia.ImageOnly
             val VideoOnly = ActivityResultContracts.PickVisualMedia.VideoOnly
-            fun singleMimeType(mineType: String = ALL_IMAGE) =
-                ActivityResultContracts.PickVisualMedia.SingleMimeType(mineType)
+            fun singleMimeType(mineType: MediaType = MediaType.ALL_IMAGE) =
+                ActivityResultContracts.PickVisualMedia.SingleMimeType(mineType.type)
         }
 
 
@@ -80,60 +109,81 @@ class MediaManager {
     class FilePicker {
         private lateinit var picker: ActivityResultLauncher<Intent>
 
-        fun AppCompatActivity.registerSinglePicker(uriCallback: (result: Uri?) -> Unit) {
-            picker =
-                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                    uriCallback(result.data?.data)
-                }
+        fun AppCompatActivity.registerSinglePicker(uriCallback: (result: Uri?) -> Unit): ActivityResultLauncher<Intent> {
+            return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                uriCallback(result.data?.data)
+            }
         }
 
-        fun AppCompatActivity.registerMultiPicker(urisCallback: (result: List<Uri>?) -> Unit) {
-            picker =
-                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                    val uris: ArrayList<Uri> = ArrayList()
-                    if (result.data?.clipData != null) {
-                        val count = result.data?.clipData!!.itemCount
-                        for (i in 0 until count) {
-                            val uri = result.data?.clipData!!.getItemAt(i).uri
-                            uris.add(uri)
-                        }
-                    } else {
-                        val uri = result.data?.data
-                        if (uri != null) {
-                            uris.add(uri)
-                        }
+        fun AppCompatActivity.registerMultiPicker(urisCallback: (result: List<Uri>?) -> Unit): ActivityResultLauncher<Intent> {
+            return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                val uris: ArrayList<Uri> = ArrayList()
+                if (result.data?.clipData != null) {
+                    val count = result.data?.clipData!!.itemCount
+                    for (i in 0 until count) {
+                        val uri = result.data?.clipData!!.getItemAt(i).uri
+                        uris.add(uri)
                     }
-
-                    urisCallback(uris)
+                } else {
+                    val uri = result.data?.data
+                    if (uri != null) {
+                        uris.add(uri)
+                    }
                 }
+                urisCallback(uris)
+            }
         }
 
-        fun launchFilePicker(mediaType: String = ALL_IMAGE, allowMultiple: Boolean = false) {
+        fun launchFilePicker(mediaType: MediaType, allowMultiple: Boolean = false) {
             if (::picker.isInitialized) {
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                     addCategory(Intent.CATEGORY_OPENABLE)
-                    type = mediaType
+                    type = mediaType.type
                     putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
                 }
                 picker.launch(intent)
             }
         }
 
-        fun launchMediaPicker(mediaType: String = ALL_IMAGE,allowMultiple: Boolean = false){
+        private fun launchMediaPicker(mediaType: MediaType, allowMultiple: Boolean = false) {
             if (::picker.isInitialized) {
-                val intent = Intent(Intent.ACTION_PICK,MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
-                    type = mediaType
+                val intent = Intent(Intent.ACTION_PICK).apply {
+                    type = mediaType.type
                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
                 }
                 picker.launch(intent)
             }
         }
+
+        fun launchImagePicker(mediaType: MediaType, allowMultiple: Boolean = false) {
+            if (mediaType.type.contains(IMAGE)) {
+                launchMediaPicker(mediaType = mediaType, allowMultiple = allowMultiple)
+            } else {
+                throw Exception("Only image media type is allowed")
+            }
+        }
+
+        fun launchVideoPicker(mediaType: MediaType, allowMultiple: Boolean = false) {
+            if (mediaType.type.contains(VIDEO)) {
+                launchMediaPicker(mediaType = mediaType, allowMultiple = allowMultiple)
+            } else {
+                throw Exception("Only video media type is allowed")
+            }
+        }
+
+        fun launchApplicationPicker(mediaType: MediaType, allowMultiple: Boolean = false) {
+            if (mediaType.type.contains(APPLICATION)) {
+                launchMediaPicker(mediaType = mediaType, allowMultiple = allowMultiple)
+            } else {
+                throw Exception("Only document media type is allowed")
+            }
+        }
     }
 
     object FileUtil {
 
-        fun fileToBitmap(file : File): Bitmap? {
+        fun fileToBitmap(file: File): Bitmap? {
             return BitmapFactory.decodeFile(file.absolutePath)
         }
 
@@ -184,11 +234,14 @@ class MediaManager {
             return null
         }
 
-        fun AppCompatActivity.urisToFiles(uris: List<Uri>?, folderName: String = ""): List<MediaData> {
-            val list : ArrayList<MediaData> = arrayListOf()
-            uris?.forEach {uri ->
+        fun AppCompatActivity.urisToFiles(
+            uris: List<Uri>?,
+            folderName: String = ""
+        ): List<MediaData> {
+            val list: ArrayList<MediaData> = arrayListOf()
+            uris?.forEach { uri ->
                 try {
-                    val mediaData : MediaData = uriToFile(uri = uri, folderName = folderName)
+                    val mediaData: MediaData = uriToFile(uri = uri, folderName = folderName)
                     list.add(mediaData)
                 } catch (e: Exception) {
 
@@ -205,7 +258,8 @@ class MediaManager {
 
                 var fileSize: Int? = getFileSize(uriData)
 
-                val directoryPath : File = getFolderPath(context = this, folderName = folderName) ?: throw Exception("File not created")
+                val directoryPath: File = getFolderPath(context = this, folderName = folderName)
+                    ?: throw Exception("File not created")
 
 
                 val tempFile: File = File(directoryPath, fileName).apply {
@@ -231,10 +285,16 @@ class MediaManager {
                 }
                 inputStream?.close()
 
-                val extension : String = getFileExtension(file = tempFile)
-                val mimeType : String = getMimeType(file = tempFile) ?: ""
+                val extension: String = getFileExtension(file = tempFile)
+                val mimeType: String = getMimeType(file = tempFile) ?: ""
 
-                return MediaData(fileName = fileName, fileSize = fileSize, file = tempFile, extension = extension, mimeType = mimeType)
+                return MediaData(
+                    fileName = fileName,
+                    fileSize = fileSize,
+                    file = tempFile,
+                    extension = extension,
+                    mimeType = mimeType
+                )
             } ?: run {
                 throw Exception("URI is null")
             }
@@ -244,7 +304,7 @@ class MediaManager {
 
         private fun getMimeType(file: File): String? {
             val mimeTypeMap = MimeTypeMap.getSingleton()
-            val extension : String = getFileExtension(file = file)
+            val extension: String = getFileExtension(file = file)
             return mimeTypeMap.getMimeTypeFromExtension(extension)
         }
 
@@ -263,7 +323,7 @@ class MediaManager {
             if (!directoryPath.exists()) {
                 return if (directoryPath.mkdirs()) {
                     directoryPath
-                }else{
+                } else {
                     null
                 }
             }
