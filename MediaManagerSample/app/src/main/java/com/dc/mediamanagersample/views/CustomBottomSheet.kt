@@ -2,6 +2,7 @@ package com.dc.mediamanagersample.views
 
 import android.content.Context
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -65,14 +66,22 @@ class CustomBottomSheet(
         inner class RecyclerViewViewHolder(private val binding: CustomBottomSheetChildBinding) :
             RecyclerView.ViewHolder(binding.root) {
             fun setDataToViews(position: Int) {
-//                if (list[position].image != 0) {
-//                    binding.childImage.setImageResource(list[position].image)
-//                    binding.childImage.visibility = View.VISIBLE
-//                } else {
-//                    binding.childImage.visibility = View.GONE
-//                }
 
-                binding.childText.text = list[position].name
+                val item = list[position]
+
+                if (item.header.isNullOrEmpty()) {
+                    binding.headerText.text = ""
+                    binding.childText.text = list[position].name
+
+                    binding.headerText.visibility = View.GONE
+                    binding.childText.visibility = View.VISIBLE
+                } else {
+                    binding.headerText.text = list[position].header
+                    binding.childText.text = ""
+
+                    binding.headerText.visibility = View.VISIBLE
+                    binding.childText.visibility = View.GONE
+                }
             }
 
             fun onClickListener() {

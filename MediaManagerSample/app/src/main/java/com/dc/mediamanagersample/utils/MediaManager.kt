@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.activity.result.ActivityResultLauncher
@@ -53,6 +54,7 @@ class MediaManager {
 
         // Document MIME types
         ALL_DOCUMENT("${APPLICATION}/*"),
+        PDF("${APPLICATION}/pdf"),
     }
 
 //    companion object {
@@ -106,59 +108,65 @@ class MediaManager {
 
     }
 
-    class FilePicker {
-        private lateinit var picker: ActivityResultLauncher<Intent>
+    object FilePicker {
+        //private lateinit var picker: ActivityResultLauncher<Intent>
 
-        fun AppCompatActivity.registerSinglePicker(uriCallback: (result: Uri?) -> Unit) {
-            picker =
-                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                    uriCallback(result.data?.data)
-                }
+        fun AppCompatActivity.registerSinglePicker(uriCallback: (result: Uri?) -> Unit): ActivityResultLauncher<Intent> {
+            return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                uriCallback(result.data?.data)
+            }
         }
 
-        fun AppCompatActivity.registerMultiPicker(urisCallback: (result: List<Uri>?) -> Unit){
-            picker =
-                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                    val uris: ArrayList<Uri> = ArrayList()
-                    if (result.data?.clipData != null) {
-                        val count = result.data?.clipData!!.itemCount
-                        for (i in 0 until count) {
-                            val uri = result.data?.clipData!!.getItemAt(i).uri
-                            uris.add(uri)
-                        }
-                    } else {
-                        val uri = result.data?.data
-                        if (uri != null) {
-                            uris.add(uri)
-                        }
+        fun AppCompatActivity.registerMultiPicker(urisCallback: (result: List<Uri>?) -> Unit): ActivityResultLauncher<Intent> {
+            return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                val uris: ArrayList<Uri> = ArrayList()
+                if (result.data?.clipData != null) {
+                    val count = result.data?.clipData!!.itemCount
+                    for (i in 0 until count) {
+                        val uri = result.data?.clipData!!.getItemAt(i).uri
+                        uris.add(uri)
                     }
-                    urisCallback(uris)
+                } else {
+                    val uri = result.data?.data
+                    if (uri != null) {
+                        uris.add(uri)
+                    }
                 }
-        }
-
-        fun launchFilePicker(mediaType: MediaType, allowMultiple: Boolean = false) {
-            if (::picker.isInitialized) {
-                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                    type = mediaType.type
-                    putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
-                }
-                picker.launch(intent)
+                urisCallback(uris)
             }
         }
 
-        private fun launchMediaPicker(mediaType: MediaType, allowMultiple: Boolean = false) {
-            if (::picker.isInitialized) {
-                val intent = Intent(Intent.ACTION_PICK).apply {
-                    type = mediaType.type
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
-                }
-                picker.launch(intent)
+        fun ActivityResultLauncher<Intent>.launchFilePicker(
+            mediaType: MediaType,
+            allowMultiple: Boolean = false
+        ) {
+
+            val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                addCategory(Intent.CATEGORY_OPENABLE)
+                type = mediaType.type
+                putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
             }
+            launch(intent)
+
         }
 
-        fun launchImagePicker(mediaType: MediaType, allowMultiple: Boolean = false) {
+        private fun ActivityResultLauncher<Intent>.launchMediaPicker(
+            mediaType: MediaType,
+            allowMultiple: Boolean = false
+        ) {
+
+            val intent = Intent(Intent.ACTION_PICK).apply {
+                //type = mediaType.type
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
+            }
+            launch(intent)
+        }
+
+        fun ActivityResultLauncher<Intent>.launchImagePicker(
+            mediaType: MediaType,
+            allowMultiple: Boolean = false
+        ) {
             if (mediaType.type.contains(IMAGE)) {
                 launchMediaPicker(mediaType = mediaType, allowMultiple = allowMultiple)
             } else {
@@ -166,7 +174,10 @@ class MediaManager {
             }
         }
 
-        fun launchVideoPicker(mediaType: MediaType, allowMultiple: Boolean = false) {
+        fun ActivityResultLauncher<Intent>.launchVideoPicker(
+            mediaType: MediaType,
+            allowMultiple: Boolean = false
+        ) {
             if (mediaType.type.contains(VIDEO)) {
                 launchMediaPicker(mediaType = mediaType, allowMultiple = allowMultiple)
             } else {
@@ -174,13 +185,13 @@ class MediaManager {
             }
         }
 
-        fun launchDocumentPicker(mediaType: MediaType, allowMultiple: Boolean = false) {
-            if (mediaType.type.contains(APPLICATION)) {
-                launchMediaPicker(mediaType = mediaType, allowMultiple = allowMultiple)
-            } else {
-                throw Exception("Only document media type is allowed")
-            }
-        }
+//        fun ActivityResultLauncher<Intent>.launchDocumentPicker(mediaType: MediaType, allowMultiple: Boolean = false) {
+//            if (mediaType.type.contains(APPLICATION)) {
+//                launchMediaPicker(mediaType = mediaType, allowMultiple = allowMultiple)
+//            } else {
+//                throw Exception("Only document media type is allowed")
+//            }
+//        }
     }
 
     object FileUtil {
@@ -246,7 +257,7 @@ class MediaManager {
                     val mediaData: MediaData = uriToFile(uri = uri, folderName = folderName)
                     list.add(mediaData)
                 } catch (e: Exception) {
-
+                    throw Exception(e.message)
                 }
             }
             return list
