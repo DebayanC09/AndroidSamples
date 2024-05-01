@@ -19,13 +19,14 @@ import com.dc.mediamanagersample.utils.MediaManager.FilePicker.launchImagePicker
 import com.dc.mediamanagersample.utils.MediaManager.FilePicker.launchVideoPicker
 import com.dc.mediamanagersample.utils.MediaManager.FilePicker.registerMultiPicker
 import com.dc.mediamanagersample.utils.MediaManager.FilePicker.registerSinglePicker
-import com.dc.mediamanagersample.utils.MediaManager.FileUtil.uriToFile
+import com.dc.mediamanagersample.utils.MediaManager.FileUtil.uriToByteArray
 import com.dc.mediamanagersample.utils.MediaManager.FileUtil.urisToFiles
 import com.dc.mediamanagersample.utils.RetrofitUtils
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.io.File
 
 class FilePickerActivity : AppCompatActivity() {
     private val mediaDataList: ArrayList<MediaManager.MediaData> = arrayListOf()
@@ -81,24 +82,28 @@ class FilePickerActivity : AppCompatActivity() {
 
         val data = mediaDataList.first()
 
-        val partBody: MultipartBody.Part =
-            RetrofitUtils.fileToPart(name = "file", file = data.file, fileName = data.fileName)
+
+        data.file?.let { file: File ->
+            val partBody: MultipartBody.Part =
+                RetrofitUtils.fileToPart(name = "file", file = file, fileName = data.fileName)
+
+            RetrofitClient.invokeWithOutAuth().uploadFile(partBody).enqueue(object :
+                Callback<FileUploadResponse> {
+                override fun onResponse(
+                    call: Call<FileUploadResponse>,
+                    response: Response<FileUploadResponse>
+                ) {
+                    deleteFiles()
+                }
+
+                override fun onFailure(call: Call<FileUploadResponse>, t: Throwable) {
+                    deleteFiles()
+                }
+
+            })
+        }
 
 
-        RetrofitClient.invokeWithOutAuth().uploadFile(partBody).enqueue(object :
-            Callback<FileUploadResponse> {
-            override fun onResponse(
-                call: Call<FileUploadResponse>,
-                response: Response<FileUploadResponse>
-            ) {
-                deleteFiles()
-            }
-
-            override fun onFailure(call: Call<FileUploadResponse>, t: Throwable) {
-                deleteFiles()
-            }
-
-        })
     }
 
 
@@ -106,12 +111,16 @@ class FilePickerActivity : AppCompatActivity() {
         val partList: ArrayList<MultipartBody.Part> = arrayListOf()
 
         mediaDataList.forEachIndexed { index, data ->
-            val partBody: MultipartBody.Part = RetrofitUtils.fileToPart(
-                name = "file${index + 1}",
-                file = data.file,
-                fileName = data.fileName
-            )
-            partList.add(partBody)
+            data.file?.let { file: File ->
+                val partBody: MultipartBody.Part = RetrofitUtils.fileToPart(
+                    name = "file${index + 1}",
+                    file = file,
+                    fileName = data.fileName
+                )
+                partList.add(partBody)
+            }
+
+
         }
 
 
@@ -272,7 +281,9 @@ class FilePickerActivity : AppCompatActivity() {
 
     private fun deleteFiles() {
         for (mediaData in mediaDataList) {
-            MediaManager.FileUtil.deleteFile(mediaData.file)
+            mediaData.file?.let {
+                MediaManager.FileUtil.deleteFile(file = it)
+            }
         }
         mediaDataList.clear()
         fileListAdapter.submitList(mediaDataList)
@@ -335,8 +346,9 @@ class FilePickerActivity : AppCompatActivity() {
     private fun getMediaData(uri: Uri?) {
         try {
             mediaDataList.clear()
-            val file = uriToFile(uri = uri)
-            mediaDataList.add(file)
+            //val file = uriToFile(uri = uri)
+            val mediaData = uriToByteArray(uri = uri)
+            mediaDataList.add(mediaData)
 
             fileListAdapter.submitList(mediaDataList)
         } catch (e: Exception) {

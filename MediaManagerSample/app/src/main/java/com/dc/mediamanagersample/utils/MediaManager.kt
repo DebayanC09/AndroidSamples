@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.database.getIntOrNull
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
@@ -28,10 +29,29 @@ class MediaManager {
     data class MediaData(
         val fileName: String,
         val fileSize: Int,
-        val file: File,
+        val file: File? = null,
+        val byteArray: ByteArray? = null,
         val extension: String,
         val mimeType: String
-    )
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as MediaData
+
+            if (byteArray != null) {
+                if (other.byteArray == null) return false
+                if (!byteArray.contentEquals(other.byteArray)) return false
+            } else if (other.byteArray != null) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            return byteArray?.contentHashCode() ?: 0
+        }
+    }
 
     enum class MediaType(val type: String) {
         ALL("*/*"),
@@ -302,6 +322,51 @@ class MediaManager {
                     file = tempFile,
                     extension = extension,
                     mimeType = mimeType
+                )
+            } ?: run {
+                throw Exception("URI is null")
+            }
+
+
+        }
+
+        fun AppCompatActivity.uriToByteArray(uri: Uri?): MediaData {
+
+            uri?.let { uriData ->
+
+                val fileName: String = getFileName(uriData) ?: throw Exception("File name is null")
+
+                var fileSize: Int? = getFileSize(uriData)
+
+                val buffer = ByteArrayOutputStream()
+
+                val inputStream = contentResolver.openInputStream(uriData)
+
+                if (fileSize == null) {
+                    val availableBytes: Int? = inputStream?.available()
+                    fileSize = availableBytes ?: 8192
+                }
+
+
+                inputStream?.let { stream ->
+                    val buf = ByteArray(fileSize)
+                    var length: Int
+                    while (stream.read(buf).also { length = it } > 0) {
+                        buffer.write(buf, 0, length)
+                    }
+                }
+                buffer.flush()
+                inputStream?.close()
+
+                //val extension: String = getFileExtension(file = tempFile)
+                //val mimeType: String = getMimeType(file = tempFile) ?: ""
+                val toByteArray : ByteArray = buffer.toByteArray()
+                return MediaData(
+                    fileName = fileName,
+                    fileSize = fileSize,
+                    byteArray = buffer.toByteArray(),
+                    extension = "",
+                    mimeType = ""
                 )
             } ?: run {
                 throw Exception("URI is null")
