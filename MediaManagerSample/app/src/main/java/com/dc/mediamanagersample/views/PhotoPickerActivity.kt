@@ -11,17 +11,17 @@ class PhotoPickerActivity : AppCompatActivity() {
         ActivityPhotoPickerBinding.inflate(layoutInflater)
     }
 
-    private val singlePicker: MediaManager.PhotoPicker = MediaManager.PhotoPicker().apply {
-        registerSinglePicker { uri: Uri? ->
-            setImage(uri)
-        }
-    }
-
-    private val multiPicker: MediaManager.PhotoPicker = MediaManager.PhotoPicker().apply {
-        registerMultiPicker { uris: List<Uri>? ->
-            println(uris)
-        }
-    }
+//    private val singlePicker: MediaManager.PhotoPicker = MediaManager.PhotoPicker().apply {
+//        registerSinglePicker { uri: Uri? ->
+//            setImage(uri)
+//        }
+//    }
+//
+//    private val multiPicker: MediaManager.PhotoPicker = MediaManager.PhotoPicker().apply {
+//        registerMultiPicker { uris: List<Uri>? ->
+//            println(uris)
+//        }
+//    }
 
     private fun setImage(uri: Uri?) {
         uri?.let {
@@ -51,7 +51,7 @@ class PhotoPickerActivity : AppCompatActivity() {
 
     private fun launchSinglePicker() {
 //        singlePicker.launch(MediaManager.PhotoPicker.ImageAndVideo)
-        singlePicker.launch(MediaManager.PhotoPicker.ImageOnly)
+        //singlePicker.launch(MediaManager.PhotoPicker.ImageOnly)
 //        singlePicker.launch(MediaManager.PhotoPicker.VideoOnly)
 //
 //        singlePicker.launch(MediaManager.PhotoPicker.singleMimeType(MediaManager.ALL_IMAGE))

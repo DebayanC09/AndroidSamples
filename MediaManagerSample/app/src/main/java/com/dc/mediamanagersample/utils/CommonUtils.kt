@@ -7,16 +7,7 @@ object CommonUtils {
         ArrayList<CustomBottomSheet.BottomSheetModel>().apply {
             add(CustomBottomSheet.BottomSheetModel(header = "Image"))
             add(CustomBottomSheet.BottomSheetModel(id = 1, name = "Image Picker (Single)"))
-//            add(CustomBottomSheet.BottomSheetModel(id = 11, name = "Image Picker (Single JPG)"))
-//            add(CustomBottomSheet.BottomSheetModel(id = 12, name = "Image Picker (Single JPEG)"))
-//            add(CustomBottomSheet.BottomSheetModel(id = 13, name = "Image Picker (Single PNG)"))
-//            add(CustomBottomSheet.BottomSheetModel(id = 14, name = "Image Picker (Single GIF)"))
-
             add(CustomBottomSheet.BottomSheetModel(id = 2, name = "Image Picker (Multiple)"))
-//            add(CustomBottomSheet.BottomSheetModel(id = 21, name = "Image Picker (Multiple JPG)"))
-//            add(CustomBottomSheet.BottomSheetModel(id = 22, name = "Image Picker (Multiple JPEG)"))
-//            add(CustomBottomSheet.BottomSheetModel(id = 23, name = "Image Picker (Multiple PNG)"))
-//            add(CustomBottomSheet.BottomSheetModel(id = 24, name = "Image Picker (Multiple GIF)"))
 
             add(CustomBottomSheet.BottomSheetModel(header = "Video"))
             add(CustomBottomSheet.BottomSheetModel(id = 3, name = "Video Picker (Single)"))
@@ -39,11 +30,26 @@ object CommonUtils {
 
             add(CustomBottomSheet.BottomSheetModel(id = 541, name = "File Picker (Single All Document Types)"))
             add(CustomBottomSheet.BottomSheetModel(id = 542, name = "File Picker (Single PDF)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 543, name = "File Picker (Single MS_WORD)"))
+
+            //////////////////////// File Picker (Multiple) /////////////////////////////////////////////////////
 
             add(CustomBottomSheet.BottomSheetModel(id = 6, name = "File Picker (Multiple)"))
-            add(CustomBottomSheet.BottomSheetModel(id = 61, name = "File Picker (Multiple JPG)"))
-            add(CustomBottomSheet.BottomSheetModel(id = 62, name = "File Picker (Multiple JPEG)"))
-            add(CustomBottomSheet.BottomSheetModel(id = 63, name = "File Picker (Multiple PNG)"))
-            add(CustomBottomSheet.BottomSheetModel(id = 64, name = "File Picker (Multiple GIF)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 611, name = "File Picker (Multiple All Image Types)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 612, name = "File Picker (Multiple JPG)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 613, name = "File Picker (Multiple JPEG)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 614, name = "File Picker (Multiple PNG)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 615, name = "File Picker (Multiple GIF)"))
+
+            add(CustomBottomSheet.BottomSheetModel(id = 621, name = "File Picker (Multiple All Video Types)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 622, name = "File Picker (Multiple MP4)"))
+
+            add(CustomBottomSheet.BottomSheetModel(id = 631, name = "File Picker (Multiple All Audio Types)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 632, name = "File Picker (Multiple MP3)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 633, name = "File Picker (Multiple M4A)"))
+
+            add(CustomBottomSheet.BottomSheetModel(id = 641, name = "File Picker (Multiple All Document Types)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 642, name = "File Picker (Multiple PDF)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 643, name = "File Picker (Multiple MS_WORD)"))
         }
 }

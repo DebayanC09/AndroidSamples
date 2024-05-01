@@ -4,12 +4,12 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.database.getIntOrNull
@@ -55,6 +55,7 @@ class MediaManager {
         // Document MIME types
         ALL_DOCUMENT("${APPLICATION}/*"),
         PDF("${APPLICATION}/pdf"),
+        MS_WORD("${APPLICATION}/msword"),
     }
 
 //    companion object {
@@ -72,44 +73,43 @@ class MediaManager {
 //        const val M4A = "audio/m4a"
 //    }
 
-    class PhotoPicker {
-
-        private lateinit var picker: ActivityResultLauncher<PickVisualMediaRequest>
-
-        companion object {
-
-            val ImageAndVideo = ActivityResultContracts.PickVisualMedia.ImageAndVideo
-            val ImageOnly = ActivityResultContracts.PickVisualMedia.ImageOnly
-            val VideoOnly = ActivityResultContracts.PickVisualMedia.VideoOnly
-            fun singleMimeType(mineType: MediaType = MediaType.ALL_IMAGE) =
-                ActivityResultContracts.PickVisualMedia.SingleMimeType(mineType.type)
-        }
-
-
-        fun AppCompatActivity.registerSinglePicker(uriCallback: (result: Uri?) -> Unit) {
-            picker =
-                registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
-                    uriCallback(uri)
-                }
-        }
-
-        fun AppCompatActivity.registerMultiPicker(urisCallback: (result: List<Uri>?) -> Unit) {
-            picker =
-                registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris: List<Uri>? ->
-                    urisCallback(uris)
-                }
-        }
-
-        fun launch(visualMediaType: ActivityResultContracts.PickVisualMedia.VisualMediaType = ImageAndVideo) {
-            if (::picker.isInitialized) {
-                picker.launch(PickVisualMediaRequest(visualMediaType))
-            }
-        }
-
-    }
+//    class PhotoPicker {
+//
+//        private lateinit var picker: ActivityResultLauncher<PickVisualMediaRequest>
+//
+//        companion object {
+//
+//            val ImageAndVideo = ActivityResultContracts.PickVisualMedia.ImageAndVideo
+//            val ImageOnly = ActivityResultContracts.PickVisualMedia.ImageOnly
+//            val VideoOnly = ActivityResultContracts.PickVisualMedia.VideoOnly
+//            fun singleMimeType(mineType: MediaType = MediaType.ALL_IMAGE) =
+//                ActivityResultContracts.PickVisualMedia.SingleMimeType(mineType.type)
+//        }
+//
+//
+//        fun AppCompatActivity.registerSinglePicker(uriCallback: (result: Uri?) -> Unit) {
+//            picker =
+//                registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
+//                    uriCallback(uri)
+//                }
+//        }
+//
+//        fun AppCompatActivity.registerMultiPicker(urisCallback: (result: List<Uri>?) -> Unit) {
+//            picker =
+//                registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris: List<Uri>? ->
+//                    urisCallback(uris)
+//                }
+//        }
+//
+//        fun launch(visualMediaType: ActivityResultContracts.PickVisualMedia.VisualMediaType = ImageAndVideo) {
+//            if (::picker.isInitialized) {
+//                picker.launch(PickVisualMediaRequest(visualMediaType))
+//            }
+//        }
+//
+//    }
 
     object FilePicker {
-        //private lateinit var picker: ActivityResultLauncher<Intent>
 
         fun AppCompatActivity.registerSinglePicker(uriCallback: (result: Uri?) -> Unit): ActivityResultLauncher<Intent> {
             return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -150,54 +150,49 @@ class MediaManager {
 
         }
 
-        private fun ActivityResultLauncher<Intent>.launchMediaPicker(
-            mediaType: MediaType,
+        fun ActivityResultLauncher<Intent>.launchImagePicker(
             allowMultiple: Boolean = false
         ) {
-
-            val intent = Intent(Intent.ACTION_PICK).apply {
-                //type = mediaType.type
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
-            }
+            val intent =
+                Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
+                }
             launch(intent)
         }
 
-        fun ActivityResultLauncher<Intent>.launchImagePicker(
-            mediaType: MediaType,
-            allowMultiple: Boolean = false
-        ) {
-            if (mediaType.type.contains(IMAGE)) {
-                launchMediaPicker(mediaType = mediaType, allowMultiple = allowMultiple)
-            } else {
-                throw Exception("Only image media type is allowed")
-            }
-        }
-
         fun ActivityResultLauncher<Intent>.launchVideoPicker(
-            mediaType: MediaType,
             allowMultiple: Boolean = false
         ) {
-            if (mediaType.type.contains(VIDEO)) {
-                launchMediaPicker(mediaType = mediaType, allowMultiple = allowMultiple)
-            } else {
-                throw Exception("Only video media type is allowed")
-            }
+            val intent =
+                Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI).apply {
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
+                }
+            launch(intent)
         }
 
-//        fun ActivityResultLauncher<Intent>.launchDocumentPicker(mediaType: MediaType, allowMultiple: Boolean = false) {
-//            if (mediaType.type.contains(APPLICATION)) {
-//                launchMediaPicker(mediaType = mediaType, allowMultiple = allowMultiple)
-//            } else {
-//                throw Exception("Only document media type is allowed")
-//            }
-//        }
     }
 
     object FileUtil {
 
         fun fileToBitmap(file: File): Bitmap? {
-            return BitmapFactory.decodeFile(file.absolutePath)
+
+            val mimeType = getMimeType(file)
+
+            return if(mimeType?.contains(IMAGE) == true){
+                BitmapFactory.decodeFile(file.absolutePath)
+            }else if (mimeType?.contains(VIDEO) == true){
+                val retriever = MediaMetadataRetriever()
+                retriever.setDataSource(file.path)
+
+                val bitmap = retriever.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+                retriever.release()
+
+                bitmap
+            }else{
+                null
+            }
         }
 
         fun deleteFile(file: File): Boolean {

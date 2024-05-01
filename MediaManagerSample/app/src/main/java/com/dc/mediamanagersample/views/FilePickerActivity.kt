@@ -65,6 +65,7 @@ class FilePickerActivity : AppCompatActivity() {
         }
         binding.uploadButton.setOnClickListener {
             uploadFile()
+            //uploadFiles()
         }
     }
 
@@ -100,6 +101,38 @@ class FilePickerActivity : AppCompatActivity() {
         })
     }
 
+
+    private fun uploadFiles() {
+        val partList: ArrayList<MultipartBody.Part> = arrayListOf()
+
+        mediaDataList.forEachIndexed { index, data ->
+            val partBody: MultipartBody.Part = RetrofitUtils.fileToPart(
+                name = "file${index + 1}",
+                file = data.file,
+                fileName = data.fileName
+            )
+            partList.add(partBody)
+        }
+
+
+
+
+        RetrofitClient.invokeWithOutAuth().uploadFiles(partList).enqueue(object :
+            Callback<FileUploadResponse> {
+            override fun onResponse(
+                call: Call<FileUploadResponse>,
+                response: Response<FileUploadResponse>
+            ) {
+                deleteFiles()
+            }
+
+            override fun onFailure(call: Call<FileUploadResponse>, t: Throwable) {
+                deleteFiles()
+            }
+
+        })
+    }
+
     private fun showPriorityBottomSheet() {
         CustomBottomSheet(this, CommonUtils.filePickerList).setOnClickListener(object :
             CustomBottomSheet.BottomSheetClickListener {
@@ -115,6 +148,10 @@ class FilePickerActivity : AppCompatActivity() {
 
                     3 -> {
                         launchSingleVideoPicker()
+                    }
+
+                    4 -> {
+                        launchMultiVideoPicker()
                     }
 
                     5 -> {
@@ -168,6 +205,66 @@ class FilePickerActivity : AppCompatActivity() {
                     542 -> {
                         launchSingleFilePicker(mediaType = MediaManager.MediaType.PDF)
                     }
+
+                    543 -> {
+                        launchSingleFilePicker(mediaType = MediaManager.MediaType.MS_WORD)
+                    }
+
+                    6 -> {
+                        launchMultiFilePicker()
+                    }
+
+                    611 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.ALL_IMAGE)
+                    }
+
+                    612 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.JPG)
+                    }
+
+                    613 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.JPEG)
+                    }
+
+                    614 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.PNG)
+                    }
+
+                    615 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.GIF)
+                    }
+
+                    621 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.ALL_VIDEO)
+                    }
+
+                    622 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.MP4)
+                    }
+
+                    631 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.ALL_AUDIO)
+                    }
+
+                    632 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.MP3)
+                    }
+
+                    633 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.M4A)
+                    }
+
+                    641 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.ALL_DOCUMENT)
+                    }
+
+                    642 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.PDF)
+                    }
+
+                    643 -> {
+                        launchMultiFilePicker(mediaType = MediaManager.MediaType.MS_WORD)
+                    }
                 }
             }
         }).show()
@@ -190,25 +287,24 @@ class FilePickerActivity : AppCompatActivity() {
         )
     }
 
-    private fun launchMultiFilePicker() {
+    private fun launchMultiFilePicker(mediaType: MediaManager.MediaType = MediaManager.MediaType.ALL) {
         multiPicker.launchFilePicker(
-            mediaType = MediaManager.MediaType.ALL_IMAGE,
+            mediaType = mediaType,
             allowMultiple = true
         )
     }
 
-    private fun launchSingleImagePicker(mediaType: MediaManager.MediaType = MediaManager.MediaType.ALL_IMAGE) {
+    private fun launchSingleImagePicker() {
         try {
-            singlePicker.launchImagePicker(mediaType = mediaType)
+            singlePicker.launchImagePicker()
         } catch (e: Exception) {
             Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
         }
     }
 
-    private fun launchMultiImagePicker(mediaType: MediaManager.MediaType = MediaManager.MediaType.ALL_IMAGE) {
+    private fun launchMultiImagePicker() {
         try {
             multiPicker.launchImagePicker(
-                mediaType = mediaType,
                 allowMultiple = true
             )
         } catch (e: Exception) {
@@ -218,7 +314,7 @@ class FilePickerActivity : AppCompatActivity() {
 
     private fun launchSingleVideoPicker() {
         try {
-            singlePicker.launchVideoPicker(mediaType = MediaManager.MediaType.ALL_VIDEO)
+            singlePicker.launchVideoPicker()
         } catch (e: Exception) {
             Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
         }
@@ -227,7 +323,6 @@ class FilePickerActivity : AppCompatActivity() {
     private fun launchMultiVideoPicker() {
         try {
             multiPicker.launchVideoPicker(
-                mediaType = MediaManager.MediaType.ALL_VIDEO,
                 allowMultiple = true
             )
         } catch (e: Exception) {

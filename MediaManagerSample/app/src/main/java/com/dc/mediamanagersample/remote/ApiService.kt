@@ -12,4 +12,8 @@ interface ApiService {
     @POST("upload")
     fun uploadFile(@Part filePart: MultipartBody.Part): Call<FileUploadResponse>
 
+    @Multipart
+    @POST("upload")
+    fun uploadFiles(@Part fileParts: List<MultipartBody.Part>): Call<FileUploadResponse>
+
 }
