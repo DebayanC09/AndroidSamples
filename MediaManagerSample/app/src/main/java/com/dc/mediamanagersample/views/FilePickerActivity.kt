@@ -18,41 +18,23 @@ class FilePickerActivity : AppCompatActivity() {
         ActivityFilePickerBinding.inflate(layoutInflater)
     }
 
-    private val singleFilePicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
+    private val list : List<CustomBottomSheet.BottomSheetModel> = ArrayList<CustomBottomSheet.BottomSheetModel>().apply {
+        add(CustomBottomSheet.BottomSheetModel(header = "Image"))
+        add(CustomBottomSheet.BottomSheetModel(id = 1, name = "Image Picker"))
+    }
+
+    private val singlePicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
         registerSinglePicker { uri: Uri? ->
             getMediaData(uri)
         }
     }
 
-    private val multiFilePicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
+    private val multiPicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
         registerMultiPicker { uris: List<Uri>? ->
             getMediaDataList(uris)
         }
     }
 
-    private val singleImagePicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
-        registerSinglePicker { uri: Uri? ->
-            //getMediaData(uri)
-        }
-    }
-
-    private val multiImagePicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
-        registerMultiPicker { uris: List<Uri>? ->
-            //getMediaDataList(uris)
-        }
-    }
-
-    private val singleVideoPicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
-        registerSinglePicker { uri: Uri? ->
-            //getMediaData(uri)
-        }
-    }
-
-    private val multiVideoPicker: MediaManager.FilePicker = MediaManager.FilePicker().apply {
-        registerMultiPicker { uris: List<Uri>? ->
-            //getMediaDataList(uris)
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,33 +46,26 @@ class FilePickerActivity : AppCompatActivity() {
     }
 
     private fun setOnClickListener() {
-        binding.pickSingleFileButton.setOnClickListener {
-            launchSingleFilePicker()
-        }
-
-        binding.pickMultiFileButton.setOnClickListener {
-            launchMultiFilePicker()
-        }
-
-        binding.pickSingleImageButton.setOnClickListener {
-            launchSingleImagePicker()
-        }
-
-        binding.pickMultiImageButton.setOnClickListener {
-            launchMultiImagePicker()
-        }
-
-        binding.pickSingleVideoButton.setOnClickListener {
-            launchSingleVideoPicker()
-        }
-
-        binding.pickMultiVideoButton.setOnClickListener {
-            launchMultiVideoPicker()
+        binding.buttonLayout.setOnClickListener {
+            showPriorityBottomSheet()
         }
 
         binding.deleteButton.setOnClickListener {
             deleteFile()
         }
+    }
+
+    private fun showPriorityBottomSheet() {
+        CustomBottomSheet(this, list).setOnClickListener(object :
+            CustomBottomSheet.BottomSheetClickListener {
+            override fun onClick(model: CustomBottomSheet.BottomSheetModel) {
+                when(model.id){
+                    1 -> {
+                        launchSingleImagePicker()
+                    }
+                }
+            }
+        }).show()
     }
 
     private fun deleteFile() {
@@ -117,7 +92,7 @@ class FilePickerActivity : AppCompatActivity() {
 
     private fun launchSingleImagePicker() {
         try {
-            singleImagePicker.launchImagePicker(mediaType = MediaManager.MediaType.ALL_IMAGE)
+            singlePicker.launchImagePicker(mediaType = MediaManager.MediaType.ALL_IMAGE)
         } catch (e: Exception) {
             Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
         }
@@ -148,6 +123,14 @@ class FilePickerActivity : AppCompatActivity() {
                 mediaType = MediaManager.MediaType.ALL_VIDEO,
                 allowMultiple = true
             )
+        } catch (e: Exception) {
+            Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun launchSingleDocumentPicker() {
+        try {
+            singleDocumentPicker.launchDocumentPicker(mediaType = MediaManager.MediaType.ALL_DOCUMENT)
         } catch (e: Exception) {
             Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
         }

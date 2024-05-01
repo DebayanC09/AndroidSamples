@@ -109,29 +109,31 @@ class MediaManager {
     class FilePicker {
         private lateinit var picker: ActivityResultLauncher<Intent>
 
-        fun AppCompatActivity.registerSinglePicker(uriCallback: (result: Uri?) -> Unit): ActivityResultLauncher<Intent> {
-            return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                uriCallback(result.data?.data)
-            }
+        fun AppCompatActivity.registerSinglePicker(uriCallback: (result: Uri?) -> Unit) {
+            picker =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                    uriCallback(result.data?.data)
+                }
         }
 
-        fun AppCompatActivity.registerMultiPicker(urisCallback: (result: List<Uri>?) -> Unit): ActivityResultLauncher<Intent> {
-            return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                val uris: ArrayList<Uri> = ArrayList()
-                if (result.data?.clipData != null) {
-                    val count = result.data?.clipData!!.itemCount
-                    for (i in 0 until count) {
-                        val uri = result.data?.clipData!!.getItemAt(i).uri
-                        uris.add(uri)
+        fun AppCompatActivity.registerMultiPicker(urisCallback: (result: List<Uri>?) -> Unit){
+            picker =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                    val uris: ArrayList<Uri> = ArrayList()
+                    if (result.data?.clipData != null) {
+                        val count = result.data?.clipData!!.itemCount
+                        for (i in 0 until count) {
+                            val uri = result.data?.clipData!!.getItemAt(i).uri
+                            uris.add(uri)
+                        }
+                    } else {
+                        val uri = result.data?.data
+                        if (uri != null) {
+                            uris.add(uri)
+                        }
                     }
-                } else {
-                    val uri = result.data?.data
-                    if (uri != null) {
-                        uris.add(uri)
-                    }
+                    urisCallback(uris)
                 }
-                urisCallback(uris)
-            }
         }
 
         fun launchFilePicker(mediaType: MediaType, allowMultiple: Boolean = false) {
@@ -172,7 +174,7 @@ class MediaManager {
             }
         }
 
-        fun launchApplicationPicker(mediaType: MediaType, allowMultiple: Boolean = false) {
+        fun launchDocumentPicker(mediaType: MediaType, allowMultiple: Boolean = false) {
             if (mediaType.type.contains(APPLICATION)) {
                 launchMediaPicker(mediaType = mediaType, allowMultiple = allowMultiple)
             } else {
