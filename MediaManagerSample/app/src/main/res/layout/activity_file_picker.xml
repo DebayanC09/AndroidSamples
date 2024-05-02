@@ -5,21 +5,47 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".views.FilePickerActivity"
-    >
+    tools:context=".views.FilePickerActivity">
 
+
+    <RadioGroup
+        android:id="@+id/uploadType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <RadioButton
+            android:id="@+id/uploadFile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Upload File"
+            tools:ignore="HardcodedText" />
+
+        <RadioButton
+            android:id="@+id/uploadByteArray"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Upload ByteArray"
+            tools:ignore="HardcodedText" />
+    </RadioGroup>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/buttonLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="16dp"
+
+        android:orientation="vertical"
         android:text="Open Picker"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/uploadType"
         tools:ignore="HardcodedText" />
 
     <TextView

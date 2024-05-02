@@ -7,11 +7,16 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.dc.mediamanagersample.databinding.ChildFileListBinding
+import com.dc.mediamanagersample.utils.CommonUtils
 import com.dc.mediamanagersample.utils.MediaManager
+import com.dc.mediamanagersample.utils.RetrofitUtils
+import com.dc.mediamanagersample.views.FilePickerActivity
 
 
 class FileListAdapter :
     ListAdapter<MediaManager.MediaData, FileListAdapter.ViewHolder>(DiffCallBack) {
+
+    private var uploadType: CommonUtils.UploadType = CommonUtils.UploadType.File
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -29,22 +34,35 @@ class FileListAdapter :
         super.submitList(list?.let { ArrayList(it) })
     }
 
+    fun setUploadType(uploadType: CommonUtils.UploadType) {
+        this.uploadType = uploadType
+    }
+
     inner class ViewHolder(private val binding: ChildFileListBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun setDataToViews(itemData: MediaManager.MediaData) {
             try {
-                val bitmap: Bitmap? = MediaManager.FileUtil.fileToBitmap(itemData.file)
+                val bitmap: Bitmap? = when (uploadType) {
+                    CommonUtils.UploadType.File -> {
+                        itemData.file?.let { MediaManager.FileUtil.fileToBitmap(it) }
+                    }
+
+                    CommonUtils.UploadType.ByteArray -> {
+                        itemData.byteArray?.let { MediaManager.FileUtil.byteArrayToBitmap(it) }
+                    }
+
+                }
                 binding.thumbnail.setImageBitmap(bitmap)
-            } catch (e: Exception) {
+            } catch (_: Exception) {
 
             }
 
             var detailsText = ""
-            detailsText = "${detailsText}\n${itemData.fileName}"
-            detailsText = "${detailsText}\n${itemData.file.absoluteFile}"
-            detailsText = "${detailsText}\n${itemData.fileSize}"
-            detailsText = "${detailsText}\n${itemData.extension}"
-            detailsText = "${detailsText}\n${itemData.mimeType}"
+            detailsText = "${detailsText}\nMedia Name = ${itemData.fileName}"
+            detailsText = "${detailsText}\nPath = ${itemData.file?.absoluteFile}"
+            detailsText = "${detailsText}\nMedia Size = ${itemData.fileSize}"
+            detailsText = "${detailsText}\nExtension = ${itemData.extension}"
+            detailsText = "${detailsText}\nMIME = ${itemData.mimeType}"
 
             binding.details.text = detailsText
         }

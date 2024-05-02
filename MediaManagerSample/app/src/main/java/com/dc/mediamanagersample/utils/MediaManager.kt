@@ -95,7 +95,7 @@ class MediaManager {
 
 //    class PhotoPicker {
 //
-//        private lateinit var picker: ActivityResultLauncher<PickVisualMediaRequest>
+//        private var picker: ActivityResultLauncher<PickVisualMediaRequest>
 //
 //        companion object {
 //
@@ -200,9 +200,9 @@ class MediaManager {
 
             val mimeType = getMimeType(file)
 
-            return if(mimeType?.contains(IMAGE) == true){
+            return if (mimeType?.contains(IMAGE) == true) {
                 BitmapFactory.decodeFile(file.absolutePath)
-            }else if (mimeType?.contains(VIDEO) == true){
+            } else if (mimeType?.contains(VIDEO) == true) {
                 val retriever = MediaMetadataRetriever()
                 retriever.setDataSource(file.path)
 
@@ -210,9 +210,13 @@ class MediaManager {
                 retriever.release()
 
                 bitmap
-            }else{
+            } else {
                 null
             }
+        }
+
+        fun byteArrayToBitmap(byteArray: ByteArray): Bitmap? {
+            return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
         }
 
         fun deleteFile(file: File): Boolean {
@@ -286,6 +290,10 @@ class MediaManager {
 
                 var fileSize: Int? = getFileSize(uriData)
 
+                val extension: String = getMediaExtension(uri = uriData) ?: ""
+
+                val mimeType: String = getMimeType(uri = uriData) ?: ""
+
                 val directoryPath: File = getFolderPath(context = this, folderName = folderName)
                     ?: throw Exception("File not created")
 
@@ -313,9 +321,6 @@ class MediaManager {
                 }
                 inputStream?.close()
 
-                val extension: String = getFileExtension(file = tempFile)
-                val mimeType: String = getMimeType(file = tempFile) ?: ""
-
                 return MediaData(
                     fileName = fileName,
                     fileSize = fileSize,
@@ -330,6 +335,21 @@ class MediaManager {
 
         }
 
+        fun AppCompatActivity.urisToByteArrays(
+            uris: List<Uri>?,
+        ): List<MediaData> {
+            val list: ArrayList<MediaData> = arrayListOf()
+            uris?.forEach { uri ->
+                try {
+                    val mediaData: MediaData = uriToByteArray(uri = uri)
+                    list.add(mediaData)
+                } catch (e: Exception) {
+                    throw Exception(e.message)
+                }
+            }
+            return list
+        }
+
         fun AppCompatActivity.uriToByteArray(uri: Uri?): MediaData {
 
             uri?.let { uriData ->
@@ -337,6 +357,10 @@ class MediaManager {
                 val fileName: String = getFileName(uriData) ?: throw Exception("File name is null")
 
                 var fileSize: Int? = getFileSize(uriData)
+
+                val extension: String = getMediaExtension(uri = uriData) ?: ""
+
+                val mimeType: String = getMimeType(uri = uriData) ?: ""
 
                 val buffer = ByteArrayOutputStream()
 
@@ -358,15 +382,12 @@ class MediaManager {
                 buffer.flush()
                 inputStream?.close()
 
-                //val extension: String = getFileExtension(file = tempFile)
-                //val mimeType: String = getMimeType(file = tempFile) ?: ""
-                val toByteArray : ByteArray = buffer.toByteArray()
                 return MediaData(
                     fileName = fileName,
                     fileSize = fileSize,
                     byteArray = buffer.toByteArray(),
-                    extension = "",
-                    mimeType = ""
+                    extension = extension,
+                    mimeType = mimeType
                 )
             } ?: run {
                 throw Exception("URI is null")
@@ -377,12 +398,23 @@ class MediaManager {
 
         private fun getMimeType(file: File): String? {
             val mimeTypeMap = MimeTypeMap.getSingleton()
-            val extension: String = getFileExtension(file = file)
+            val extension: String = getMediaExtension(file = file) ?: ""
             return mimeTypeMap.getMimeTypeFromExtension(extension)
         }
 
-        private fun getFileExtension(file: File): String {
+        private fun Context.getMimeType(uri: Uri): String? {
+            val contentResolver = contentResolver
+            return contentResolver.getType(uri)
+        }
+
+        private fun getMediaExtension(file: File): String? {
             return MimeTypeMap.getFileExtensionFromUrl(file.path)
+        }
+
+        private fun Context.getMediaExtension(uri: Uri): String? {
+            val contentResolver = contentResolver
+            val mimeType = contentResolver.getType(uri)
+            return mimeType?.let { MimeTypeMap.getSingleton().getExtensionFromMimeType(it) }
         }
 
         private fun getFolderPath(context: Context, folderName: String): File? {

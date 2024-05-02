@@ -20,6 +20,8 @@ import com.dc.mediamanagersample.utils.MediaManager.FilePicker.launchVideoPicker
 import com.dc.mediamanagersample.utils.MediaManager.FilePicker.registerMultiPicker
 import com.dc.mediamanagersample.utils.MediaManager.FilePicker.registerSinglePicker
 import com.dc.mediamanagersample.utils.MediaManager.FileUtil.uriToByteArray
+import com.dc.mediamanagersample.utils.MediaManager.FileUtil.uriToFile
+import com.dc.mediamanagersample.utils.MediaManager.FileUtil.urisToByteArrays
 import com.dc.mediamanagersample.utils.MediaManager.FileUtil.urisToFiles
 import com.dc.mediamanagersample.utils.RetrofitUtils
 import okhttp3.MultipartBody
@@ -34,14 +36,11 @@ class FilePickerActivity : AppCompatActivity() {
         ActivityFilePickerBinding.inflate(layoutInflater)
     }
 
+    private var uploadType: CommonUtils.UploadType = CommonUtils.UploadType.File
     private val fileListAdapter: FileListAdapter = FileListAdapter()
-
-
     private val singlePicker: ActivityResultLauncher<Intent> = registerSinglePicker { uri: Uri? ->
         getMediaData(uri)
     }
-
-
     private val multiPicker = registerMultiPicker { uris: List<Uri>? ->
         getMediaDataList(uris)
     }
@@ -57,6 +56,22 @@ class FilePickerActivity : AppCompatActivity() {
     }
 
     private fun setOnClickListener() {
+        binding.uploadType.setOnCheckedChangeListener { _, checkedId ->
+
+            when (checkedId) {
+                binding.uploadFile.id -> {
+                    uploadType = CommonUtils.UploadType.File
+                    fileListAdapter.setUploadType(uploadType)
+                }
+
+                binding.uploadByteArray.id -> {
+                    uploadType = CommonUtils.UploadType.ByteArray
+                    fileListAdapter.setUploadType(uploadType)
+                }
+            }
+        }
+
+
         binding.buttonLayout.setOnClickListener {
             showPriorityBottomSheet()
         }
@@ -82,12 +97,30 @@ class FilePickerActivity : AppCompatActivity() {
 
         val data = mediaDataList.first()
 
+        val partBody: MultipartBody.Part? = when (uploadType) {
+            CommonUtils.UploadType.File -> {
+                data.file?.let {
+                    RetrofitUtils.fileToPart(
+                        name = "file",
+                        file = it,
+                        fileName = data.fileName
+                    )
+                }
+            }
 
-        data.file?.let { file: File ->
-            val partBody: MultipartBody.Part =
-                RetrofitUtils.fileToPart(name = "file", file = file, fileName = data.fileName)
+            CommonUtils.UploadType.ByteArray -> {
+                data.byteArray?.let {
+                    RetrofitUtils.byteArrayToPart(
+                        name = "file",
+                        byteArray = it,
+                        fileName = data.fileName
+                    )
+                }
+            }
+        }
 
-            RetrofitClient.invokeWithOutAuth().uploadFile(partBody).enqueue(object :
+        partBody?.let {
+            RetrofitClient.invokeWithOutAuth().uploadFile(filePart = it).enqueue(object :
                 Callback<FileUploadResponse> {
                 override fun onResponse(
                     call: Call<FileUploadResponse>,
@@ -102,8 +135,6 @@ class FilePickerActivity : AppCompatActivity() {
 
             })
         }
-
-
     }
 
 
@@ -119,12 +150,7 @@ class FilePickerActivity : AppCompatActivity() {
                 )
                 partList.add(partBody)
             }
-
-
         }
-
-
-
 
         RetrofitClient.invokeWithOutAuth().uploadFiles(partList).enqueue(object :
             Callback<FileUploadResponse> {
@@ -346,8 +372,15 @@ class FilePickerActivity : AppCompatActivity() {
     private fun getMediaData(uri: Uri?) {
         try {
             mediaDataList.clear()
-            //val file = uriToFile(uri = uri)
-            val mediaData = uriToByteArray(uri = uri)
+            val mediaData: MediaManager.MediaData = when (uploadType) {
+                CommonUtils.UploadType.File -> {
+                    uriToFile(uri = uri)
+                }
+
+                CommonUtils.UploadType.ByteArray -> {
+                    uriToByteArray(uri = uri)
+                }
+            }
             mediaDataList.add(mediaData)
 
             fileListAdapter.submitList(mediaDataList)
@@ -359,7 +392,16 @@ class FilePickerActivity : AppCompatActivity() {
     private fun getMediaDataList(uris: List<Uri>?) {
         try {
             mediaDataList.clear()
-            val fileList: List<MediaManager.MediaData> = urisToFiles(uris = uris)
+            val fileList: List<MediaManager.MediaData> = when (uploadType) {
+                CommonUtils.UploadType.File -> {
+                    urisToFiles(uris = uris)
+                }
+
+                CommonUtils.UploadType.ByteArray -> {
+                    urisToByteArrays(uris = uris)
+                }
+            }
+
             mediaDataList.addAll(fileList)
 
             fileListAdapter.submitList(mediaDataList)
