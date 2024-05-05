@@ -4,7 +4,6 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.dc.mediamanagersample.databinding.ActivityPhotoPickerBinding
-import com.dc.mediamanagersample.utils.MediaManager
 
 class PhotoPickerActivity : AppCompatActivity() {
     private val binding: ActivityPhotoPickerBinding by lazy {

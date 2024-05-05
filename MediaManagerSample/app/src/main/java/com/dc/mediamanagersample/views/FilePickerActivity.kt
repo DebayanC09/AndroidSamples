@@ -1,7 +1,6 @@
 package com.dc.mediamanagersample.views
 
 
-import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -13,15 +12,10 @@ import com.dc.mediamanagersample.remote.RetrofitClient
 import com.dc.mediamanagersample.utils.CommonUtils
 import com.dc.mediamanagersample.utils.FilePicker
 import com.dc.mediamanagersample.utils.FileUtil
-import com.dc.mediamanagersample.utils.FileUtil.uriToByteArray
-import com.dc.mediamanagersample.utils.FileUtil.uriToFile
-import com.dc.mediamanagersample.utils.FileUtil.urisToByteArrays
-import com.dc.mediamanagersample.utils.FileUtil.urisToFiles
 import com.dc.mediamanagersample.utils.MediaData
 import com.dc.mediamanagersample.utils.MediaType
 import com.dc.mediamanagersample.utils.RetrofitUtils
-import com.dc.mediamanagersample.utils.registerMultiFilePicker
-import com.dc.mediamanagersample.utils.registerSingleFilePicker
+import com.dc.mediamanagersample.utils.UploadType
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -34,15 +28,16 @@ class FilePickerActivity : AppCompatActivity() {
         ActivityFilePickerBinding.inflate(layoutInflater)
     }
 
-    private var uploadType: CommonUtils.UploadType = CommonUtils.UploadType.File
+    private var uploadType: UploadType = UploadType.File
     private val fileListAdapter: FileListAdapter = FileListAdapter()
-    private val singlePicker: FilePicker = registerSingleFilePicker { uri: Uri? ->
-        getMediaData(uri)
-    }
-    private val multiPicker: FilePicker = registerMultiFilePicker { uris: List<Uri>? ->
-        getMediaDataList(uris)
-    }
 
+    private val filePicker: FilePicker =
+        FilePicker(this@FilePickerActivity) { mediaData: List<MediaData> ->
+            mediaDataList.clear()
+            mediaDataList.addAll(mediaData)
+
+            fileListAdapter.submitList(mediaDataList)
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -58,12 +53,12 @@ class FilePickerActivity : AppCompatActivity() {
 
             when (checkedId) {
                 binding.uploadFile.id -> {
-                    uploadType = CommonUtils.UploadType.File
+                    uploadType = UploadType.File
                     fileListAdapter.setUploadType(uploadType)
                 }
 
                 binding.uploadByteArray.id -> {
-                    uploadType = CommonUtils.UploadType.ByteArray
+                    uploadType = UploadType.ByteArray
                     fileListAdapter.setUploadType(uploadType)
                 }
             }
@@ -96,7 +91,7 @@ class FilePickerActivity : AppCompatActivity() {
         val data = mediaDataList.first()
 
         val partBody: MultipartBody.Part? = when (uploadType) {
-            CommonUtils.UploadType.File -> {
+            UploadType.File -> {
                 data.file?.let {
                     RetrofitUtils.fileToPart(
                         name = "file",
@@ -106,7 +101,7 @@ class FilePickerActivity : AppCompatActivity() {
                 }
             }
 
-            CommonUtils.UploadType.ByteArray -> {
+            UploadType.ByteArray -> {
                 data.byteArray?.let {
                     RetrofitUtils.byteArrayToPart(
                         name = "file",
@@ -316,22 +311,24 @@ class FilePickerActivity : AppCompatActivity() {
 
     //region Picker Listeners
     private fun launchSingleFilePicker(mediaType: MediaType = MediaType.ALL) {
-        singlePicker.launchFilePicker(
+        filePicker.launchFilePicker(
             mediaType = mediaType,
-            allowMultiple = false
+            allowMultiple = false,
+            uploadType = uploadType
         )
     }
 
     private fun launchMultiFilePicker(mediaType: MediaType = MediaType.ALL) {
-        multiPicker.launchFilePicker(
+        filePicker.launchFilePicker(
             mediaType = mediaType,
-            allowMultiple = true
+            allowMultiple = true,
+            uploadType = uploadType
         )
     }
 
     private fun launchSingleImagePicker() {
         try {
-            singlePicker.launchImagePicker()
+            filePicker.launchImagePicker(uploadType = uploadType)
         } catch (e: Exception) {
             Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
         }
@@ -339,8 +336,9 @@ class FilePickerActivity : AppCompatActivity() {
 
     private fun launchMultiImagePicker() {
         try {
-            multiPicker.launchImagePicker(
-                allowMultiple = true
+            filePicker.launchImagePicker(
+                allowMultiple = true,
+                uploadType = uploadType
             )
         } catch (e: Exception) {
             Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
@@ -349,7 +347,7 @@ class FilePickerActivity : AppCompatActivity() {
 
     private fun launchSingleVideoPicker() {
         try {
-            singlePicker.launchVideoPicker()
+            filePicker.launchVideoPicker(uploadType = uploadType)
         } catch (e: Exception) {
             Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
         }
@@ -357,8 +355,9 @@ class FilePickerActivity : AppCompatActivity() {
 
     private fun launchMultiVideoPicker() {
         try {
-            multiPicker.launchVideoPicker(
-                allowMultiple = true
+            filePicker.launchVideoPicker(
+                allowMultiple = true,
+                uploadType = uploadType
             )
         } catch (e: Exception) {
             Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
@@ -366,46 +365,4 @@ class FilePickerActivity : AppCompatActivity() {
     }
 
     //endregion
-
-    private fun getMediaData(uri: Uri?) {
-        try {
-            mediaDataList.clear()
-            val mediaData: MediaData = when (uploadType) {
-                CommonUtils.UploadType.File -> {
-                    uriToFile(uri = uri)
-                }
-
-                CommonUtils.UploadType.ByteArray -> {
-                    uriToByteArray(uri = uri)
-                }
-            }
-            mediaDataList.add(mediaData)
-
-            fileListAdapter.submitList(mediaDataList)
-        } catch (e: Exception) {
-            Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun getMediaDataList(uris: List<Uri>?) {
-        try {
-            mediaDataList.clear()
-            val fileList: List<MediaData> = when (uploadType) {
-                CommonUtils.UploadType.File -> {
-                    urisToFiles(uris = uris)
-                }
-
-                CommonUtils.UploadType.ByteArray -> {
-                    urisToByteArrays(uris = uris)
-                }
-            }
-
-            mediaDataList.addAll(fileList)
-
-            fileListAdapter.submitList(mediaDataList)
-        } catch (e: Exception) {
-            Toast.makeText(this@FilePickerActivity, e.message, Toast.LENGTH_SHORT).show()
-        }
-    }
-
 }

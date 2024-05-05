@@ -13,13 +13,13 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.database.getIntOrNull
+import com.dc.mediamanagersample.utils.FileUtil.uriToByteArray
+import com.dc.mediamanagersample.utils.FileUtil.uriToFile
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
-typealias SinglePickerCallback = (result: Uri?) -> Unit
-typealias MultiPickerCallback = (result: List<Uri>?) -> Unit
-
+typealias FilePickerCallback = (result: List<MediaData>) -> Unit
 
 private const val IMAGE = "image"
 private const val VIDEO = "video"
@@ -54,40 +54,10 @@ enum class MediaType(val type: String) {
 }
 //endregion
 
-//region Single File Picker
-fun AppCompatActivity.registerSingleFilePicker(callback: SinglePickerCallback): FilePicker {
-    return FilePicker(launcher = createSingleFileLauncher(callback))
-}
-
-private fun AppCompatActivity.createSingleFileLauncher(callback: SinglePickerCallback): ActivityResultLauncher<Intent> {
-    return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        callback(result.data?.data)
-    }
-}
-//endregion
-
-//region Multi File Picker
-fun AppCompatActivity.registerMultiFilePicker(callback: MultiPickerCallback): FilePicker {
-    return FilePicker(launcher = createMultiFileLauncher(callback))
-}
-
-private fun AppCompatActivity.createMultiFileLauncher(callback: MultiPickerCallback): ActivityResultLauncher<Intent> {
-    return registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        val uris: ArrayList<Uri> = ArrayList()
-        if (result.data?.clipData != null) {
-            val count = result.data?.clipData!!.itemCount
-            for (i in 0 until count) {
-                val uri = result.data?.clipData!!.getItemAt(i).uri
-                uris.add(uri)
-            }
-        } else {
-            val uri = result.data?.data
-            if (uri != null) {
-                uris.add(uri)
-            }
-        }
-        callback(uris)
-    }
+//region Enum UploadType
+enum class UploadType {
+    File,
+    ByteArray
 }
 //endregion
 
@@ -122,12 +92,59 @@ data class MediaData(
 
 //region FilePicker
 class FilePicker(
-    private val launcher: ActivityResultLauncher<Intent>
+    activity: AppCompatActivity,
+    private val callback: FilePickerCallback
 ) {
+
+    private var uploadType: UploadType = UploadType.File
+
+    private var launcher: ActivityResultLauncher<Intent> =
+        activity.registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+            val mediaData: ArrayList<MediaData> = ArrayList()
+            mediaData.clear()
+            if (result.data?.clipData != null) {
+                val count = result.data?.clipData!!.itemCount
+                for (i in 0 until count) {
+                    val uri: Uri? = result.data?.clipData?.getItemAt(i)?.uri
+                    val data: MediaData = when (uploadType) {
+                        UploadType.File -> {
+                            activity.uriToFile(uri = uri)
+                        }
+
+                        UploadType.ByteArray -> {
+                            activity.uriToByteArray(uri = uri)
+                        }
+                    }
+                    mediaData.add(data)
+                }
+
+            } else {
+                val uri = result.data?.data
+                if (uri != null) {
+                    val data: MediaData = when (uploadType) {
+                        UploadType.File -> {
+                            activity.uriToFile(uri = uri)
+                        }
+
+                        UploadType.ByteArray -> {
+                            activity.uriToByteArray(uri = uri)
+                        }
+                    }
+                    mediaData.add(data)
+                }
+            }
+            callback(mediaData)
+        }
+
     fun launchFilePicker(
         mediaType: MediaType,
-        allowMultiple: Boolean = false
+        allowMultiple: Boolean = false,
+        uploadType: UploadType = UploadType.File
     ) {
+
+        this.uploadType = uploadType
+
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = mediaType.type
@@ -137,8 +154,11 @@ class FilePicker(
     }
 
     fun launchImagePicker(
-        allowMultiple: Boolean = false
+        allowMultiple: Boolean = false,
+        uploadType: UploadType = UploadType.File
     ) {
+        this.uploadType = uploadType
+
         val intent =
             Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI).apply {
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -148,8 +168,11 @@ class FilePicker(
     }
 
     fun launchVideoPicker(
-        allowMultiple: Boolean = false
+        allowMultiple: Boolean = false,
+        uploadType: UploadType = UploadType.File
     ) {
+        this.uploadType = uploadType
+
         val intent =
             Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI).apply {
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -165,25 +188,33 @@ object FileUtil {
 
     fun fileToBitmap(file: File): Bitmap? {
 
-        val mimeType = getMimeType(file)
+        try {
+            val mimeType = getMimeType(file)
 
-        return if (mimeType?.contains(IMAGE) == true) {
-            BitmapFactory.decodeFile(file.absolutePath)
-        } else if (mimeType?.contains(VIDEO) == true) {
-            val retriever = MediaMetadataRetriever()
-            retriever.setDataSource(file.path)
+            return if (mimeType?.contains(IMAGE) == true) {
+                BitmapFactory.decodeFile(file.absolutePath)
+            } else if (mimeType?.contains(VIDEO) == true) {
+                val retriever = MediaMetadataRetriever()
+                retriever.setDataSource(file.path)
 
-            val bitmap = retriever.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
-            retriever.release()
+                val bitmap = retriever.getFrameAtTime(1, MediaMetadataRetriever.OPTION_CLOSEST_SYNC)
+                retriever.release()
 
-            bitmap
-        } else {
-            null
+                bitmap
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            return null
         }
     }
 
     fun byteArrayToBitmap(byteArray: ByteArray): Bitmap? {
-        return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+        return try {
+            BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     fun deleteFile(file: File): Boolean {
@@ -233,22 +264,22 @@ object FileUtil {
         return null
     }
 
-    fun AppCompatActivity.urisToFiles(
-        uris: List<Uri>?,
-        folderName: String = ""
-    ): List<MediaData> {
-        val list: ArrayList<MediaData> = arrayListOf()
-        uris?.forEach { uri ->
-            try {
-                val mediaData: MediaData =
-                    uriToFile(uri = uri, folderName = folderName)
-                list.add(mediaData)
-            } catch (e: Exception) {
-                throw Exception(e.message)
-            }
-        }
-        return list
-    }
+//    fun AppCompatActivity.urisToFiles(
+//        uris: List<Uri>?,
+//        folderName: String = ""
+//    ): List<MediaData> {
+//        val list: ArrayList<MediaData> = arrayListOf()
+//        uris?.forEach { uri ->
+//            try {
+//                val mediaData: MediaData =
+//                    uriToFile(uri = uri, folderName = folderName)
+//                list.add(mediaData)
+//            } catch (e: Exception) {
+//                throw Exception(e.message)
+//            }
+//        }
+//        return list
+//    }
 
     fun AppCompatActivity.uriToFile(uri: Uri?, folderName: String = ""): MediaData {
 
@@ -303,20 +334,20 @@ object FileUtil {
 
     }
 
-    fun AppCompatActivity.urisToByteArrays(
-        uris: List<Uri>?,
-    ): List<MediaData> {
-        val list: ArrayList<MediaData> = arrayListOf()
-        uris?.forEach { uri ->
-            try {
-                val mediaData: MediaData = uriToByteArray(uri = uri)
-                list.add(mediaData)
-            } catch (e: Exception) {
-                throw Exception(e.message)
-            }
-        }
-        return list
-    }
+//    fun AppCompatActivity.urisToByteArrays(
+//        uris: List<Uri>?,
+//    ): List<MediaData> {
+//        val list: ArrayList<MediaData> = arrayListOf()
+//        uris?.forEach { uri ->
+//            try {
+//                val mediaData: MediaData = uriToByteArray(uri = uri)
+//                list.add(mediaData)
+//            } catch (e: Exception) {
+//                throw Exception(e.message)
+//            }
+//        }
+//        return list
+//    }
 
     fun AppCompatActivity.uriToByteArray(uri: Uri?): MediaData {
 
@@ -407,7 +438,6 @@ object FileUtil {
 
 }
 //endregion
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

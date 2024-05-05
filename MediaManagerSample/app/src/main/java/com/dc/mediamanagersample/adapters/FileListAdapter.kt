@@ -7,16 +7,15 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.dc.mediamanagersample.databinding.ChildFileListBinding
-import com.dc.mediamanagersample.utils.CommonUtils
-import com.dc.mediamanagersample.utils.MediaManager
-import com.dc.mediamanagersample.utils.RetrofitUtils
-import com.dc.mediamanagersample.views.FilePickerActivity
+import com.dc.mediamanagersample.utils.FileUtil
+import com.dc.mediamanagersample.utils.MediaData
+import com.dc.mediamanagersample.utils.UploadType
 
 
 class FileListAdapter :
-    ListAdapter<MediaManager.MediaData, FileListAdapter.ViewHolder>(DiffCallBack) {
+    ListAdapter<MediaData, FileListAdapter.ViewHolder>(DiffCallBack) {
 
-    private var uploadType: CommonUtils.UploadType = CommonUtils.UploadType.File
+    private var uploadType: UploadType = UploadType.File
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         return ViewHolder(
@@ -30,25 +29,25 @@ class FileListAdapter :
         holder.setDataToViews(getItem(position))
     }
 
-    override fun submitList(list: List<MediaManager.MediaData>?) {
+    override fun submitList(list: List<MediaData>?) {
         super.submitList(list?.let { ArrayList(it) })
     }
 
-    fun setUploadType(uploadType: CommonUtils.UploadType) {
+    fun setUploadType(uploadType: UploadType) {
         this.uploadType = uploadType
     }
 
     inner class ViewHolder(private val binding: ChildFileListBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun setDataToViews(itemData: MediaManager.MediaData) {
+        fun setDataToViews(itemData: MediaData) {
             try {
                 val bitmap: Bitmap? = when (uploadType) {
-                    CommonUtils.UploadType.File -> {
-                        itemData.file?.let { MediaManager.FileUtil.fileToBitmap(it) }
+                    UploadType.File -> {
+                        itemData.file?.let { FileUtil.fileToBitmap(it) }
                     }
 
-                    CommonUtils.UploadType.ByteArray -> {
-                        itemData.byteArray?.let { MediaManager.FileUtil.byteArrayToBitmap(it) }
+                    UploadType.ByteArray -> {
+                        itemData.byteArray?.let { FileUtil.byteArrayToBitmap(it) }
                     }
 
                 }
@@ -69,15 +68,15 @@ class FileListAdapter :
 
     }
 
-    private object DiffCallBack : DiffUtil.ItemCallback<MediaManager.MediaData>() {
+    private object DiffCallBack : DiffUtil.ItemCallback<MediaData>() {
         override fun areItemsTheSame(
-            oldItem: MediaManager.MediaData, newItem: MediaManager.MediaData
+            oldItem: MediaData, newItem: MediaData
         ): Boolean {
             return oldItem == newItem
         }
 
         override fun areContentsTheSame(
-            oldItem: MediaManager.MediaData, newItem: MediaManager.MediaData
+            oldItem: MediaData, newItem: MediaData
         ): Boolean {
             return oldItem == newItem
         }

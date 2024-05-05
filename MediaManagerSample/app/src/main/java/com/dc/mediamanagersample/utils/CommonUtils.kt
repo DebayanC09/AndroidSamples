@@ -4,11 +4,6 @@ import com.dc.mediamanagersample.views.CustomBottomSheet
 
 object CommonUtils {
 
-    enum class UploadType {
-        File,
-        ByteArray
-    }
-
     val filePickerList: List<CustomBottomSheet.BottomSheetModel> =
         ArrayList<CustomBottomSheet.BottomSheetModel>().apply {
             add(CustomBottomSheet.BottomSheetModel(header = "Image"))
