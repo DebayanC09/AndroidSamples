@@ -4,6 +4,19 @@ import com.dc.mediamanagersample.views.CustomBottomSheet
 
 object CommonUtils {
 
+    val photoPickerList: List<CustomBottomSheet.BottomSheetModel> =
+        ArrayList<CustomBottomSheet.BottomSheetModel>().apply {
+            add(CustomBottomSheet.BottomSheetModel(header = "Image"))
+            add(CustomBottomSheet.BottomSheetModel(id = 1, name = "Image Picker (Single)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 2, name = "Image Picker (Multiple)"))
+            add(CustomBottomSheet.BottomSheetModel(header = "Video"))
+            add(CustomBottomSheet.BottomSheetModel(id = 3, name = "Video Picker (Single)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 4, name = "Video Picker (Multiple)"))
+            add(CustomBottomSheet.BottomSheetModel(header = "Image & Video"))
+            add(CustomBottomSheet.BottomSheetModel(id = 5, name = "Image & Video Picker (Single)"))
+            add(CustomBottomSheet.BottomSheetModel(id = 6, name = "Image & Video Picker (Multiple)"))
+        }
+
     val filePickerList: List<CustomBottomSheet.BottomSheetModel> =
         ArrayList<CustomBottomSheet.BottomSheetModel>().apply {
             add(CustomBottomSheet.BottomSheetModel(header = "Image"))

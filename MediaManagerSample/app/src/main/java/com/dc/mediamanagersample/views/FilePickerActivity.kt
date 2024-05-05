@@ -23,11 +23,11 @@ import retrofit2.Response
 import java.io.File
 
 class FilePickerActivity : AppCompatActivity() {
-    private val mediaDataList: ArrayList<MediaData> = arrayListOf()
     private val binding: ActivityFilePickerBinding by lazy {
         ActivityFilePickerBinding.inflate(layoutInflater)
     }
 
+    private val mediaDataList: ArrayList<MediaData> = arrayListOf()
     private var uploadType: UploadType = UploadType.File
     private val fileListAdapter: FileListAdapter = FileListAdapter()
 

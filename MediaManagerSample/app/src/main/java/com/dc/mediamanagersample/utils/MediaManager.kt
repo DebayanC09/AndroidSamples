@@ -10,6 +10,7 @@ import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.database.getIntOrNull
@@ -89,6 +90,73 @@ data class MediaData(
     }
 }
 //endregion
+
+class PhotoPicker(
+    private val activity: AppCompatActivity,
+    private val callback: FilePickerCallback
+) {
+
+    companion object {
+
+        val ImageAndVideo = ActivityResultContracts.PickVisualMedia.ImageAndVideo
+        val ImageOnly = ActivityResultContracts.PickVisualMedia.ImageOnly
+        val VideoOnly = ActivityResultContracts.PickVisualMedia.VideoOnly
+        fun singleMimeType(mineType: MediaType = MediaType.ALL_IMAGE) =
+            ActivityResultContracts.PickVisualMedia.SingleMimeType(mineType.type)
+    }
+
+    private var uploadType: UploadType = UploadType.File
+
+    private val registerSinglePicker =
+        activity.registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri: Uri? ->
+
+            val list: ArrayList<Uri> = arrayListOf<Uri>().apply {
+                uri?.let { add(it) }
+            }
+            callback(uriToMediaData(list))
+        }
+
+
+    private val registerMultiPicker =
+        activity.registerForActivityResult(ActivityResultContracts.PickMultipleVisualMedia()) { uris: List<Uri> ->
+            callback(uriToMediaData(uris))
+        }
+
+    private fun uriToMediaData(uriData: List<Uri>): List<MediaData> {
+        val mediaData: ArrayList<MediaData> = ArrayList()
+        mediaData.clear()
+
+        uriData.forEach { uri ->
+            val data: MediaData = when (uploadType) {
+                UploadType.File -> {
+                    activity.uriToFile(uri = uri)
+                }
+
+                UploadType.ByteArray -> {
+                    activity.uriToByteArray(uri = uri)
+                }
+            }
+            mediaData.add(data)
+        }
+        return mediaData
+    }
+
+    fun launchSinglePicker(
+        visualMediaType: ActivityResultContracts.PickVisualMedia.VisualMediaType = ImageAndVideo,
+        uploadType: UploadType = UploadType.File
+    ) {
+        this.uploadType = uploadType
+        registerSinglePicker.launch(PickVisualMediaRequest(visualMediaType))
+    }
+
+    fun launchMultiPicker(
+        visualMediaType: ActivityResultContracts.PickVisualMedia.VisualMediaType = ImageAndVideo,
+        uploadType: UploadType = UploadType.File
+    ) {
+        this.uploadType = uploadType
+        registerMultiPicker.launch(PickVisualMediaRequest(visualMediaType))
+    }
+}
 
 //region FilePicker
 class FilePicker(
