@@ -1,11 +1,9 @@
 package com.dc.mediamanagersample.views
 
 
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.dc.mediamanagersample.adapters.FileListAdapter
@@ -13,17 +11,17 @@ import com.dc.mediamanagersample.databinding.ActivityFilePickerBinding
 import com.dc.mediamanagersample.models.FileUploadResponse
 import com.dc.mediamanagersample.remote.RetrofitClient
 import com.dc.mediamanagersample.utils.CommonUtils
-import com.dc.mediamanagersample.utils.MediaManager
-import com.dc.mediamanagersample.utils.MediaManager.FilePicker.launchFilePicker
-import com.dc.mediamanagersample.utils.MediaManager.FilePicker.launchImagePicker
-import com.dc.mediamanagersample.utils.MediaManager.FilePicker.launchVideoPicker
-import com.dc.mediamanagersample.utils.MediaManager.FilePicker.registerMultiPicker
-import com.dc.mediamanagersample.utils.MediaManager.FilePicker.registerSinglePicker
-import com.dc.mediamanagersample.utils.MediaManager.FileUtil.uriToByteArray
-import com.dc.mediamanagersample.utils.MediaManager.FileUtil.uriToFile
-import com.dc.mediamanagersample.utils.MediaManager.FileUtil.urisToByteArrays
-import com.dc.mediamanagersample.utils.MediaManager.FileUtil.urisToFiles
+import com.dc.mediamanagersample.utils.FilePicker
+import com.dc.mediamanagersample.utils.FileUtil
+import com.dc.mediamanagersample.utils.FileUtil.uriToByteArray
+import com.dc.mediamanagersample.utils.FileUtil.uriToFile
+import com.dc.mediamanagersample.utils.FileUtil.urisToByteArrays
+import com.dc.mediamanagersample.utils.FileUtil.urisToFiles
+import com.dc.mediamanagersample.utils.MediaData
+import com.dc.mediamanagersample.utils.MediaType
 import com.dc.mediamanagersample.utils.RetrofitUtils
+import com.dc.mediamanagersample.utils.registerMultiFilePicker
+import com.dc.mediamanagersample.utils.registerSingleFilePicker
 import okhttp3.MultipartBody
 import retrofit2.Call
 import retrofit2.Callback
@@ -31,17 +29,17 @@ import retrofit2.Response
 import java.io.File
 
 class FilePickerActivity : AppCompatActivity() {
-    private val mediaDataList: ArrayList<MediaManager.MediaData> = arrayListOf()
+    private val mediaDataList: ArrayList<MediaData> = arrayListOf()
     private val binding: ActivityFilePickerBinding by lazy {
         ActivityFilePickerBinding.inflate(layoutInflater)
     }
 
     private var uploadType: CommonUtils.UploadType = CommonUtils.UploadType.File
     private val fileListAdapter: FileListAdapter = FileListAdapter()
-    private val singlePicker: ActivityResultLauncher<Intent> = registerSinglePicker { uri: Uri? ->
+    private val singlePicker: FilePicker = registerSingleFilePicker { uri: Uri? ->
         getMediaData(uri)
     }
-    private val multiPicker = registerMultiPicker { uris: List<Uri>? ->
+    private val multiPicker: FilePicker = registerMultiFilePicker { uris: List<Uri>? ->
         getMediaDataList(uris)
     }
 
@@ -194,55 +192,55 @@ class FilePickerActivity : AppCompatActivity() {
                     }
 
                     511 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.ALL_IMAGE)
+                        launchSingleFilePicker(mediaType = MediaType.ALL_IMAGE)
                     }
 
                     512 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.JPG)
+                        launchSingleFilePicker(mediaType = MediaType.JPG)
                     }
 
                     513 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.JPEG)
+                        launchSingleFilePicker(mediaType = MediaType.JPEG)
                     }
 
                     514 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.PNG)
+                        launchSingleFilePicker(mediaType = MediaType.PNG)
                     }
 
                     515 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.GIF)
+                        launchSingleFilePicker(mediaType = MediaType.GIF)
                     }
 
                     521 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.ALL_VIDEO)
+                        launchSingleFilePicker(mediaType = MediaType.ALL_VIDEO)
                     }
 
                     522 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.MP4)
+                        launchSingleFilePicker(mediaType = MediaType.MP4)
                     }
 
                     531 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.ALL_AUDIO)
+                        launchSingleFilePicker(mediaType = MediaType.ALL_AUDIO)
                     }
 
                     532 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.MP3)
+                        launchSingleFilePicker(mediaType = MediaType.MP3)
                     }
 
                     533 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.M4A)
+                        launchSingleFilePicker(mediaType = MediaType.M4A)
                     }
 
                     541 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.ALL_DOCUMENT)
+                        launchSingleFilePicker(mediaType = MediaType.ALL_DOCUMENT)
                     }
 
                     542 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.PDF)
+                        launchSingleFilePicker(mediaType = MediaType.PDF)
                     }
 
                     543 -> {
-                        launchSingleFilePicker(mediaType = MediaManager.MediaType.MS_WORD)
+                        launchSingleFilePicker(mediaType = MediaType.MS_WORD)
                     }
 
                     6 -> {
@@ -250,55 +248,55 @@ class FilePickerActivity : AppCompatActivity() {
                     }
 
                     611 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.ALL_IMAGE)
+                        launchMultiFilePicker(mediaType = MediaType.ALL_IMAGE)
                     }
 
                     612 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.JPG)
+                        launchMultiFilePicker(mediaType = MediaType.JPG)
                     }
 
                     613 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.JPEG)
+                        launchMultiFilePicker(mediaType = MediaType.JPEG)
                     }
 
                     614 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.PNG)
+                        launchMultiFilePicker(mediaType = MediaType.PNG)
                     }
 
                     615 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.GIF)
+                        launchMultiFilePicker(mediaType = MediaType.GIF)
                     }
 
                     621 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.ALL_VIDEO)
+                        launchMultiFilePicker(mediaType = MediaType.ALL_VIDEO)
                     }
 
                     622 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.MP4)
+                        launchMultiFilePicker(mediaType = MediaType.MP4)
                     }
 
                     631 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.ALL_AUDIO)
+                        launchMultiFilePicker(mediaType = MediaType.ALL_AUDIO)
                     }
 
                     632 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.MP3)
+                        launchMultiFilePicker(mediaType = MediaType.MP3)
                     }
 
                     633 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.M4A)
+                        launchMultiFilePicker(mediaType = MediaType.M4A)
                     }
 
                     641 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.ALL_DOCUMENT)
+                        launchMultiFilePicker(mediaType = MediaType.ALL_DOCUMENT)
                     }
 
                     642 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.PDF)
+                        launchMultiFilePicker(mediaType = MediaType.PDF)
                     }
 
                     643 -> {
-                        launchMultiFilePicker(mediaType = MediaManager.MediaType.MS_WORD)
+                        launchMultiFilePicker(mediaType = MediaType.MS_WORD)
                     }
                 }
             }
@@ -308,7 +306,7 @@ class FilePickerActivity : AppCompatActivity() {
     private fun deleteFiles() {
         for (mediaData in mediaDataList) {
             mediaData.file?.let {
-                MediaManager.FileUtil.deleteFile(file = it)
+                FileUtil.deleteFile(file = it)
             }
         }
         mediaDataList.clear()
@@ -317,14 +315,14 @@ class FilePickerActivity : AppCompatActivity() {
     }
 
     //region Picker Listeners
-    private fun launchSingleFilePicker(mediaType: MediaManager.MediaType = MediaManager.MediaType.ALL) {
+    private fun launchSingleFilePicker(mediaType: MediaType = MediaType.ALL) {
         singlePicker.launchFilePicker(
             mediaType = mediaType,
             allowMultiple = false
         )
     }
 
-    private fun launchMultiFilePicker(mediaType: MediaManager.MediaType = MediaManager.MediaType.ALL) {
+    private fun launchMultiFilePicker(mediaType: MediaType = MediaType.ALL) {
         multiPicker.launchFilePicker(
             mediaType = mediaType,
             allowMultiple = true
@@ -372,7 +370,7 @@ class FilePickerActivity : AppCompatActivity() {
     private fun getMediaData(uri: Uri?) {
         try {
             mediaDataList.clear()
-            val mediaData: MediaManager.MediaData = when (uploadType) {
+            val mediaData: MediaData = when (uploadType) {
                 CommonUtils.UploadType.File -> {
                     uriToFile(uri = uri)
                 }
@@ -392,7 +390,7 @@ class FilePickerActivity : AppCompatActivity() {
     private fun getMediaDataList(uris: List<Uri>?) {
         try {
             mediaDataList.clear()
-            val fileList: List<MediaManager.MediaData> = when (uploadType) {
+            val fileList: List<MediaData> = when (uploadType) {
                 CommonUtils.UploadType.File -> {
                     urisToFiles(uris = uris)
                 }
