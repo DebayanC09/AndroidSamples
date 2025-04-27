@@ -49,9 +49,6 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    implementation(libs.biometric)
+
     implementation(libs.play.services.fido)
-    implementation(libs.coroutines.android)
-    implementation(libs.moshi)
-    implementation(libs.moshi.kotlin)
 }

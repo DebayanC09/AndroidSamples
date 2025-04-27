@@ -1,8 +1,10 @@
 package com.dc.fidoauthentication
 
 import android.content.Context
+import android.os.Message
 import android.preference.PreferenceManager
 import android.util.Base64
+import android.widget.Toast
 import androidx.core.content.edit
 import com.google.android.gms.fido.fido2.api.common.EC2Algorithm
 import com.google.android.gms.fido.fido2.api.common.PublicKeyCredentialCreationOptions
@@ -76,4 +78,7 @@ class Helper {
         secureRandom.nextBytes(challenge)
         return challenge
     }
+
+
+
 }

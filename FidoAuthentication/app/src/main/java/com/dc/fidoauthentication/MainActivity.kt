@@ -37,34 +37,109 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupLaunchers() {
-        registerLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-            val data = result.data
-            if (result.resultCode == RESULT_OK && data != null) {
-                if (data.hasExtra(Fido.FIDO2_KEY_ERROR_EXTRA)) {
-                    handleErrorResponse(data.getByteArrayExtra(Fido.FIDO2_KEY_ERROR_EXTRA))
-                } else if (data.hasExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA)) {
-                    handleRegisterResponse(data.getByteArrayExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA))
-                }
-            }
-        }
+        registerLauncher =
+            registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+                val data = result.data
+                if (result.resultCode == RESULT_OK && data != null) {
+                    if (data.hasExtra(Fido.FIDO2_KEY_CREDENTIAL_EXTRA)) {
+                        val byteArray: ByteArray? =
+                            data.getByteArrayExtra(Fido.FIDO2_KEY_CREDENTIAL_EXTRA)
 
-        signLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
-            val data = result.data
-            if (result.resultCode == RESULT_OK && data != null) {
-                if (data.hasExtra(Fido.FIDO2_KEY_ERROR_EXTRA)) {
-                    handleErrorResponse(data.getByteArrayExtra(Fido.FIDO2_KEY_ERROR_EXTRA))
-                } else if (data.hasExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA)) {
-                    handleSignResponse(data.getByteArrayExtra(Fido.FIDO2_KEY_RESPONSE_EXTRA))
+
+                        byteArray?.let {
+                            try {
+                                val credential: PublicKeyCredential =
+                                    PublicKeyCredential.deserializeFromBytes(it)
+                                val response = credential.response
+                                val rawId : ByteArray? = credential.rawId
+
+
+                                // Handle based on the type of response
+                                when (response) {
+                                    is AuthenticatorAttestationResponse -> {
+                                        if (rawId != null) {
+                                            handleRegisterResponse(response,rawId)
+                                            showToast("Registration successful")
+                                        }
+                                    }
+
+                                    is AuthenticatorErrorResponse -> {
+                                        handleErrorResponse(response)
+                                        showToast("Authentication error: ${response.errorMessage}")
+                                    }
+
+
+                                    else -> {
+                                        showToast("Unexpected response received")
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                showToast("Error deserializing credential: ${e.localizedMessage}")
+                            }
+                        } ?: run {
+                            showToast("Received null byte array")
+                        }
+                    } else {
+                        showToast("Credential extra missing")
+                    }
+                } else {
+                    showToast("Something Went wrong")
                 }
             }
-        }
+
+        signLauncher =
+            registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { result ->
+                val data = result.data
+                if (result.resultCode == RESULT_OK && data != null) {
+                    if (data.hasExtra(Fido.FIDO2_KEY_CREDENTIAL_EXTRA)) {
+                        val byteArray: ByteArray? =
+                            data.getByteArrayExtra(Fido.FIDO2_KEY_CREDENTIAL_EXTRA)
+
+                        byteArray?.let {
+                            try {
+                                val credential: PublicKeyCredential =
+                                    PublicKeyCredential.deserializeFromBytes(it)
+                                val response = credential.response
+                                val rawId : ByteArray? = credential.rawId
+
+                                when (response) {
+                                    is AuthenticatorErrorResponse -> {
+                                        handleErrorResponse(response)
+                                        showToast("Authentication error: ${response.errorMessage}")
+                                    }
+
+                                    is AuthenticatorAssertionResponse -> {
+                                        if (rawId != null) {
+                                            handleSignResponse(response,rawId)
+                                            showToast("Login successful")
+                                        }
+                                    }
+
+                                    else -> {
+                                        showToast("Unexpected response received")
+                                    }
+                                }
+                            } catch (e: Exception) {
+                                showToast("Error deserializing credential: ${e.localizedMessage}")
+                            }
+                        } ?: run {
+                            showToast("Received null byte array")
+                        }
+                    } else {
+                        showToast("Credential extra missing")
+                    }
+                } else {
+                    showToast("Something Went wrong")
+                }
+            }
     }
 
     private fun registerFido2() {
         val options = helper.generateRegisterOption()
 
         val fido2ApiClient: Fido2ApiClient = Fido.getFido2ApiClient(applicationContext)
-        val pendingIntentTask: Task<PendingIntent> = fido2ApiClient.getRegisterPendingIntent(options)
+        val pendingIntentTask: Task<PendingIntent> =
+            fido2ApiClient.getRegisterPendingIntent(options)
 
         pendingIntentTask.addOnSuccessListener { pendingIntent ->
             val request = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
@@ -88,46 +163,44 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun handleRegisterResponse(fido2Response: ByteArray?) {
-        if (fido2Response != null) {
-            val response = AuthenticatorAttestationResponse.deserializeFromBytes(fido2Response)
-            val keyHandleBase64 = Base64.encodeToString(response.keyHandle, Base64.DEFAULT)
-            val clientDataJson = String(response.clientDataJSON, Charsets.UTF_8)
-            val attestationObjectBase64 = Base64.encodeToString(response.attestationObject, Base64.DEFAULT)
+    private fun handleRegisterResponse(response: AuthenticatorAttestationResponse,rawId : ByteArray) {
 
-            helper.storeKeyHandle(response.keyHandle, this)
-            binding.signFido2Button.isEnabled = true
 
-            val registerFido2Result = """
+        val rawIdBase64 = Base64.encodeToString(rawId, Base64.DEFAULT)
+        val clientDataJson = String(response.clientDataJSON, Charsets.UTF_8)
+        //val attestationObjectBase64 = Base64.encodeToString(response.attestationObject, Base64.DEFAULT)
+
+        helper.storeKeyHandle(rawId, this)
+        binding.signFido2Button.isEnabled = true
+
+        val registerFido2Result = """
                 Authenticator Register Response
 
-                keyHandleBase64:
-                $keyHandleBase64
+                rawIdBase64:
+                $rawIdBase64
 
                 clientDataJSON:
                 $clientDataJson
 
-                attestationObjectBase64:
-                $attestationObjectBase64
             """.trimIndent()
 
-            binding.resultText.text = registerFido2Result
-        }
+        binding.resultText.text = registerFido2Result
+
     }
 
-    private fun handleSignResponse(fido2Response: ByteArray?) {
-        if (fido2Response != null) {
-            val response = AuthenticatorAssertionResponse.deserializeFromBytes(fido2Response)
-            val keyHandleBase64 = Base64.encodeToString(response.keyHandle, Base64.DEFAULT)
-            val clientDataJson = String(response.clientDataJSON, Charsets.UTF_8)
-            val authenticatorDataBase64 = Base64.encodeToString(response.authenticatorData, Base64.DEFAULT)
-            val signatureBase64 = Base64.encodeToString(response.signature, Base64.DEFAULT)
+    private fun handleSignResponse(response: AuthenticatorAssertionResponse,rawId: ByteArray) {
 
-            val signFido2Result = """
+        val rawIdBase64 = Base64.encodeToString(rawId, Base64.DEFAULT)
+        val clientDataJson = String(response.clientDataJSON, Charsets.UTF_8)
+        val authenticatorDataBase64 =
+            Base64.encodeToString(response.authenticatorData, Base64.DEFAULT)
+        val signatureBase64 = Base64.encodeToString(response.signature, Base64.DEFAULT)
+
+        val signFido2Result = """
                 Authenticator Login Response
 
-                keyHandleBase64:
-                $keyHandleBase64
+                rawIdBase64:
+                $rawIdBase64
 
                 clientDataJSON:
                 $clientDataJson
@@ -139,17 +212,17 @@ class MainActivity : AppCompatActivity() {
                 $signatureBase64
             """.trimIndent()
 
-            binding.resultText.text = signFido2Result
-        }
+        binding.resultText.text = signFido2Result
+
     }
 
-    private fun handleErrorResponse(errorBytes: ByteArray?) {
-        if (errorBytes != null) {
-            val authenticatorErrorResponse = AuthenticatorErrorResponse.deserializeFromBytes(errorBytes)
-            val errorName = authenticatorErrorResponse.errorCode.name
-            val errorMessage = authenticatorErrorResponse.errorMessage
+    private fun handleErrorResponse(credential: AuthenticatorErrorResponse) {
 
-            val registerFidoResult = """
+
+        val errorName = credential.errorCode.name
+        val errorMessage = credential.errorMessage
+
+        val registerFidoResult = """
                 An Error Occurred
 
                 Error Name:
@@ -159,7 +232,7 @@ class MainActivity : AppCompatActivity() {
                 $errorMessage
             """.trimIndent()
 
-            binding.resultText.text = registerFidoResult
-        }
+        binding.resultText.text = registerFidoResult
+
     }
 }
