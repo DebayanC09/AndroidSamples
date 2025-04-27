@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">FidoAuthentication</string>
+    <string name="register_fido2">Register FIDO2</string>
+    <string name="login_fido2">Sign FIDO2</string>
+    <string name="asset_statements" translatable="false">
+        [{
+          \"include\": \"https://fido-test-android.firebaseapp.com/.well-known/assetlinks.json\"
+        }]
+    </string>
+</resources>
